@@ -6,8 +6,8 @@ import re
 from collections.abc import Iterator
 from contextlib import suppress
 from datetime import datetime
-from urllib.parse import urlparse
 from typing import TYPE_CHECKING
+from urllib.parse import urlparse
 
 import httpx
 from fastapi import HTTPException, UploadFile, status
@@ -202,7 +202,7 @@ async def ingest_single_file(
 
     Returns (UploadedImage document, Cloudinary secure URL).
     """
-    from src.documents.models import ImageStatus, UploadedImage
+    from src.documents.models import FinalizedDocument, ImageStatus, UploadedImage
     filename = file.filename or "unnamed_document"
     mime_type = file.content_type or "application/octet-stream"
 
@@ -243,7 +243,7 @@ async def list_documents(
     """Return paginated UploadedImage documents for the given user."""
     from beanie import PydanticObjectId
 
-    from src.documents.models import ImageStatus, UploadedImage
+    from src.documents.models import FinalizedDocument, ImageStatus, UploadedImage
 
     query_conditions = [UploadedImage.status != ImageStatus.REJECTED_DUPLICATE]
 
