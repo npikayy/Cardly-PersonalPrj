@@ -82,6 +82,10 @@ async def pipline_ocr_to_llm(
         You are an AI expert in Document Information Extraction.
         If a field is not present or cannot be read, set value to null and confidence to 0.0.
         The confidence score should reflect how certain you are that the extracted value is correct based on the OCR text.
+        Preserve the original language and Unicode characters from the OCR text.
+        For Vietnamese business cards, keep Vietnamese diacritics exactly as written whenever they appear in OCR text.
+        Do not translate names, positions, company names, addresses, or other extracted fields into English.
+        Detect the language of the card and include it in detected_languages using codes such as "vi" or "en".
     """
     
     response = await _generate_business_card_json(

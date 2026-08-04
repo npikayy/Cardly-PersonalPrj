@@ -29,5 +29,5 @@ def get_ocr_engine():
 
     return PaddleOCR(
         use_textline_orientation=True,
-        lang="en",
+        lang=ocr_settings.OCR_LANGUAGE,
     )

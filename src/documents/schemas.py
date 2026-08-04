@@ -62,6 +62,7 @@ class ContactSummary(CustomModel):
     tags: list[str] = []
     notes: str | None = None
     qr_codes: list[str] = []
+    public_url: str | None = None
     image_urls: list[str] = []
     confirmed_at: datetime
 
@@ -87,6 +88,10 @@ class ContactCreateRequest(CustomModel):
     notes: str | None = None
 
 
+class ContactUpdateRequest(ContactCreateRequest):
+    """Editable contact payload."""
+
+
 class ContactListResponse(CustomModel):
     """Response containing contacts saved by the current user."""
 
@@ -94,9 +99,37 @@ class ContactListResponse(CustomModel):
     total: int
 
 
+class ContactImportResponse(CustomModel):
+    items: list[ContactSummary]
+    total: int
+
+
 class ContactDeleteResponse(CustomModel):
     """Response returned after deleting a finalized contact."""
 
+    id: str
+    status: str = "deleted"
+
+
+class ContactBundleCreateRequest(CustomModel):
+    contact_ids: list[str]
+
+
+class ContactBundleResponse(CustomModel):
+    id: str
+    public_url: str
+    qr_svg: str
+    contacts: list[ContactSummary]
+    total: int
+    created_at: datetime
+
+
+class ContactBundleListResponse(CustomModel):
+    items: list[ContactBundleResponse]
+    total: int
+
+
+class ContactBundleDeleteResponse(CustomModel):
     id: str
     status: str = "deleted"
 
@@ -123,6 +156,12 @@ class DigitalCardRequest(CustomModel):
     whatsapp: str | None = None
     linkedin: str | None = None
     website: str | None = None
+    address: str | None = None
+    social_profiles: list[str] = []
+    professional_brief: str | None = None
+    keywords: list[str] = []
+    tags: list[str] = []
+    notes: str | None = None
     highlights: list[str] = []
     is_public: bool = True
 
@@ -150,6 +189,12 @@ class PublicDigitalCardResponse(CustomModel):
     whatsapp: str | None = None
     linkedin: str | None = None
     website: str | None = None
+    address: str | None = None
+    social_profiles: list[str] = []
+    professional_brief: str | None = None
+    keywords: list[str] = []
+    tags: list[str] = []
+    notes: str | None = None
     highlights: list[str] = []
     qr_svg: str
 

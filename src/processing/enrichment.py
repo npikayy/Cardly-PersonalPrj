@@ -19,9 +19,30 @@ def sanitize_text(text: str | None) -> str | None:
     clean = re.sub(r'<[^>]+>', '', text)
     return html.unescape(clean).strip()
 
+
+def _target_language(business_card: BusinessCard) -> tuple[str, str]:
+    """Choose the enrichment language from OCR language detection and card text."""
+    detected = {str(lang).lower() for lang in business_card.detected_languages}
+    vietnamese_hint = re.compile(
+        r"[ăâđêôơưáàảãạấầẩẫậắằẳẵặéèẻẽẹếềểễệíìỉĩịóòỏõọốồổỗộớờởỡợúùủũụứừửữựýỳỷỹỵ]",
+        re.IGNORECASE,
+    )
+    card_text = " ".join(
+        [
+            business_card.name or "",
+            business_card.company or "",
+            business_card.position or "",
+            business_card.address or "",
+        ]
+    )
+    if "vi" in detected or "vietnamese" in detected or vietnamese_hint.search(card_text):
+        return "Vietnamese", "vi"
+    return "English", "en"
+
 async def enrich(business_card: BusinessCard) -> EnrichmentResponse:
     logger.info(f"Starting AI enrichment for {business_card.name} / {business_card.company}")
     client = get_gemini_client()
+    target_language, target_language_code = _target_language(business_card)
 
     try:
         prompt = f"""
@@ -44,9 +65,17 @@ async def enrich(business_card: BusinessCard) -> EnrichmentResponse:
         - company: {business_card.company}
         - position: {business_card.position}
         - address: {business_card.address}
+        - detected_languages: {business_card.detected_languages}
 
         URLs to analyze:
         {business_card.website}, {business_card.social_profiles}
+
+        LANGUAGE REQUIREMENT:
+        - Return professional_brief, keywords, and highlights in {target_language}.
+        - Target language code: {target_language_code}.
+        - If the business card contains Vietnamese text, the enrichment MUST be natural Vietnamese.
+        - Keep proper nouns, company names, emails, URLs, and official titles unchanged when appropriate.
+        - Do not translate brand names or organization names unless the provided card/URL already uses a translated version.
 
         Return ONLY these fields:
         1. professional_brief

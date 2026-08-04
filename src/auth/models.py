@@ -11,6 +11,7 @@ class User(Document):
     email: Indexed(EmailStr, unique=True)  # type: ignore[valid-type]
     password_hash: str
     full_name: str
+    avatar_url: str | None = None
     is_active: bool = False
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)

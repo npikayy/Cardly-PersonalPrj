@@ -15,6 +15,7 @@ class ImageStatus(str, Enum):
     REJECTED_DUPLICATE = "rejected_duplicate"
     PREPROCESSING = "preprocessing"
     PROCESSED = "processed"
+    CONFIRMED = "confirmed"
     FAILED = "failed"
 
 
@@ -121,6 +122,12 @@ class DigitalBusinessCard(Document):
     whatsapp: str | None = None
     linkedin: str | None = None
     website: str | None = None
+    address: str | None = None
+    social_profiles: list[str] = Field(default_factory=list)
+    professional_brief: str | None = None
+    keywords: list[str] = Field(default_factory=list)
+    tags: list[str] = Field(default_factory=list)
+    notes: str | None = None
     highlights: list[str] = Field(default_factory=list)
     is_public: bool = True
     created_at: datetime = Field(default_factory=datetime.utcnow)
@@ -128,6 +135,18 @@ class DigitalBusinessCard(Document):
 
     class Settings:
         name = "digital_business_cards"
+
+
+class ContactBundle(Document):
+    """Public share bundle containing contact snapshots."""
+
+    user_id: PydanticObjectId
+    contacts: list[dict[str, Any]] = Field(default_factory=list)
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+    class Settings:
+        name = "contact_bundles"
 
 
 class ReviewResponse(BaseModel):

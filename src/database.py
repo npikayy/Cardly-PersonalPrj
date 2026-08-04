@@ -4,6 +4,7 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from src.auth.models import OtpCode, PasswordResetSession, RefreshToken, User
 from src.config import settings
 from src.documents.models import (
+    ContactBundle,
     DigitalBusinessCard,
     FinalizedDocument,
     JsonReviewSession,
@@ -21,6 +22,7 @@ ALL_DOCUMENTS = [
     JsonReviewSession,
     FinalizedDocument,
     DigitalBusinessCard,
+    ContactBundle,
 ]
 
 

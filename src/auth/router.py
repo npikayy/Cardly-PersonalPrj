@@ -20,6 +20,7 @@ from src.auth.schemas import (
     LoginRequest,
     LogoutRequest,
     MessageResponse,
+    ProfileUpdateRequest,
     RefreshRequest,
     RegisterRequest,
     ResendOtpRequest,
@@ -110,5 +111,26 @@ async def me(current_user: CurrentUser) -> UserResponse:
         id=str(current_user.id),
         email=current_user.email,
         full_name=current_user.full_name,
+        avatar_url=current_user.avatar_url,
+        is_active=current_user.is_active,
+    )
+
+
+@router.patch(
+    "/me",
+    response_model=UserResponse,
+    summary="Update the current user's profile",
+)
+async def update_me(body: ProfileUpdateRequest, current_user: CurrentUser) -> UserResponse:
+    if body.full_name is not None:
+        current_user.full_name = body.full_name
+    if body.avatar_url is not None:
+        current_user.avatar_url = body.avatar_url.strip() or None
+    await current_user.save()
+    return UserResponse(
+        id=str(current_user.id),
+        email=current_user.email,
+        full_name=current_user.full_name,
+        avatar_url=current_user.avatar_url,
         is_active=current_user.is_active,
     )

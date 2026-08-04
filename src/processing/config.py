@@ -17,6 +17,7 @@ class OcrConfig(BaseSettings):
 
     GEMINI_API_KEY: str = ""
     OCR_ENGINE: str = "gemini"   # "tesseract" | "gemini"
+    OCR_LANGUAGE: str = "vi"
     MODEL_NAME: str = "gemini-1.5-pro"
 
 

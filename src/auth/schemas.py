@@ -44,6 +44,11 @@ class LogoutRequest(CustomModel):
     refresh_token: str
 
 
+class ProfileUpdateRequest(CustomModel):
+    full_name: str | None = Field(default=None, min_length=1, max_length=100)
+    avatar_url: str | None = None
+
+
 class ForgotPasswordRequest(CustomModel):
     email: EmailStr
 
@@ -86,6 +91,7 @@ class UserResponse(CustomModel):
     id: str
     email: str
     full_name: str
+    avatar_url: str | None = None
     is_active: bool
 
 

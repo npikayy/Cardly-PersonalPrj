@@ -106,7 +106,7 @@ async def list_documents(
             original_filename=doc.original_filename,
             mime_type=doc.mime_type,
             file_size=doc.file_size,
-            status=doc.status.value,
+            status=getattr(doc, "review_status", None) or doc.status.value,
             uploaded_at=doc.uploaded_at,
             file_urls=[doc.file_url] if doc.file_url else [],
         )
@@ -167,6 +167,115 @@ async def create_contact(
         data=body.model_dump(),
     )
     return schemas.ContactSummary(**service.contact_to_summary(contact, image_urls=[]))
+
+
+@router.post(
+    "/contacts/from-digital-qr",
+    response_model=schemas.ContactImportResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Create contacts from a Cardly QR image",
+)
+async def create_contact_from_digital_qr(
+    file: UploadFileDep,
+    current_user: CurrentUser,
+) -> schemas.ContactImportResponse:
+    """Upload a QR image containing a Cardly card/contact/bundle link and save contacts."""
+    content = await file.read()
+    contacts = await service.create_contacts_from_qr(
+        user_id=str(current_user.id),
+        image_data=content,
+    )
+    items = [schemas.ContactSummary(**service.contact_to_summary(contact, image_urls=[])) for contact in contacts]
+    return schemas.ContactImportResponse(items=items, total=len(items))
+
+
+@router.get(
+    "/contact-bundles",
+    response_model=schemas.ContactBundleListResponse,
+    summary="List contact bundles created by the current user",
+)
+async def list_contact_bundles(current_user: CurrentUser) -> schemas.ContactBundleListResponse:
+    """Return shareable contact bundles created by the current user."""
+    bundles = await service.list_contact_bundles(user_id=str(current_user.id))
+    items = [schemas.ContactBundleResponse(**service.contact_bundle_to_response(bundle)) for bundle in bundles]
+    return schemas.ContactBundleListResponse(items=items, total=len(items))
+
+
+@router.post(
+    "/contact-bundles",
+    response_model=schemas.ContactBundleResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Create a public contact bundle",
+)
+async def create_contact_bundle(
+    body: schemas.ContactBundleCreateRequest,
+    current_user: CurrentUser,
+) -> schemas.ContactBundleResponse:
+    """Create a shareable bundle from selected contacts."""
+    bundle = await service.create_contact_bundle(
+        user_id=str(current_user.id),
+        contact_ids=body.contact_ids,
+    )
+    return schemas.ContactBundleResponse(**service.contact_bundle_to_response(bundle))
+
+
+@router.get(
+    "/contact-bundles/{bundle_id}/public",
+    response_model=schemas.ContactBundleResponse,
+    summary="Get a public contact bundle",
+)
+async def get_public_contact_bundle(bundle_id: str) -> schemas.ContactBundleResponse:
+    """Return a shareable bundle by id."""
+    bundle = await service.get_public_contact_bundle(bundle_id)
+    return schemas.ContactBundleResponse(**service.contact_bundle_to_response(bundle))
+
+
+@router.delete(
+    "/contact-bundles/{bundle_id}",
+    response_model=schemas.ContactBundleDeleteResponse,
+    summary="Delete one contact bundle",
+)
+async def delete_contact_bundle(
+    bundle_id: str,
+    current_user: CurrentUser,
+) -> schemas.ContactBundleDeleteResponse:
+    """Delete a share bundle owned by the current user."""
+    await service.delete_contact_bundle(bundle_id=bundle_id, user_id=str(current_user.id))
+    return schemas.ContactBundleDeleteResponse(id=bundle_id)
+
+
+@router.get(
+    "/contacts/{contact_id}/public",
+    response_model=schemas.ContactSummary,
+    summary="Get a public contact by id",
+)
+async def get_public_contact(contact_id: str) -> schemas.ContactSummary:
+    """Return a shareable contact snapshot by id."""
+    contact = await service.get_public_contact(contact_id)
+    return schemas.ContactSummary(**service.contact_to_summary(contact, image_urls=[]))
+
+
+@router.patch(
+    "/contacts/{contact_id}",
+    response_model=schemas.ContactSummary,
+    summary="Update one finalized contact",
+)
+async def update_contact(
+    contact_id: str,
+    body: schemas.ContactUpdateRequest,
+    current_user: CurrentUser,
+) -> schemas.ContactSummary:
+    """Update an existing contact saved by the current user."""
+    contact = await service.update_contact(
+        contact_id=contact_id,
+        user_id=str(current_user.id),
+        data=body.model_dump(),
+    )
+    image_urls = await service.get_contact_image_urls(
+        processing_id=contact.processing_id,
+        user_id=str(current_user.id),
+    )
+    return schemas.ContactSummary(**service.contact_to_summary(contact, image_urls=image_urls))
 
 
 @router.delete(

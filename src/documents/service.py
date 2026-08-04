@@ -6,6 +6,7 @@ import re
 from collections.abc import Iterator
 from contextlib import suppress
 from datetime import datetime
+from urllib.parse import urlparse
 from typing import TYPE_CHECKING
 
 import httpx
@@ -68,7 +69,7 @@ async def dedupe_by_hash(file_hash: str, user_id: str) -> None:
     # Local import to avoid circular dependency with models.py
     from beanie import PydanticObjectId
 
-    from src.documents.models import ImageStatus, UploadedImage
+    from src.documents.models import FinalizedDocument, ImageStatus, UploadedImage
 
     criteria = [
         UploadedImage.file_hash_sha256 == file_hash,
@@ -136,10 +137,22 @@ def _cloudinary_uploader():
     return cloudinary.uploader
 
 
-def _cloudinary_public_id(filename: str, processing_id: str, user_id: str) -> str:
+def _safe_cloudinary_segment(value: str, fallback: str) -> str:
+    cleaned = "".join(ch if ch.isalnum() or ch in ("-", "_") else "_" for ch in value.strip())
+    return cleaned or fallback
+
+
+def _cloudinary_user_folder(user_id: str) -> str:
+    base_folder = intake_cfg.intake_settings.CLOUDINARY_FOLDER.strip().strip("/") or "cardly"
+    safe_user_id = _safe_cloudinary_segment(user_id, "unknown_user")
+    return f"{base_folder}/{safe_user_id}"
+
+
+def _cloudinary_public_id(filename: str, processing_id: str) -> str:
     stem = filename.rsplit(".", 1)[0].strip() or "document"
-    safe_stem = "".join(ch if ch.isalnum() or ch in ("-", "_") else "_" for ch in stem)
-    return f"{user_id}/{processing_id}/{safe_stem}"
+    safe_stem = _safe_cloudinary_segment(stem, "document")
+    safe_processing_id = _safe_cloudinary_segment(processing_id, "processing")
+    return f"{safe_processing_id}/{safe_stem}"
 
 
 def _cloudinary_url(public_id: str) -> str:
@@ -164,12 +177,13 @@ async def save_to_storage(
     """Upload the file bytes to Cloudinary and return (secure URL, public ID)."""
     _configure_cloudinary()
     uploader = _cloudinary_uploader()
-    public_id = _cloudinary_public_id(filename, processing_id, user_id)
+    folder = _cloudinary_user_folder(user_id)
+    public_id = _cloudinary_public_id(filename, processing_id)
 
     result = await run_in_threadpool(
         uploader.upload,
         f"data:{mime_type};base64,{base64.b64encode(file_content).decode()}",
-        folder=intake_cfg.intake_settings.CLOUDINARY_FOLDER,
+        folder=folder,
         public_id=public_id,
         overwrite=True,
         resource_type="image",
@@ -257,6 +271,9 @@ async def list_documents(
     for doc in docs:
         with suppress(Exception):
             doc.file_url = _cloudinary_url(doc.storage_path)
+        with suppress(Exception):
+            finalized = await FinalizedDocument.find_one(FinalizedDocument.processing_id == doc.processing_id)
+            doc.review_status = "confirmed" if finalized else None
 
     return docs
 
@@ -307,6 +324,159 @@ async def create_manual_contact(*, user_id: str, data: dict) -> object:
     return contact
 
 
+def decode_qr_values(image_data: bytes) -> list[str]:
+    """Decode QR code values from one image byte payload."""
+    try:
+        import cv2
+        import numpy as np
+    except ImportError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="QR decoding dependencies are not installed",
+        ) from exc
+
+    img_np = cv2.imdecode(np.frombuffer(image_data, np.uint8), cv2.IMREAD_COLOR)
+    if img_np is None:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Cannot decode uploaded QR image")
+
+    detector = cv2.QRCodeDetector()
+    values: list[str] = []
+
+    gray = cv2.cvtColor(img_np, cv2.COLOR_BGR2GRAY)
+    variants = [
+        img_np,
+        gray,
+        cv2.resize(gray, None, fx=1.75, fy=1.75, interpolation=cv2.INTER_CUBIC),
+        cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1],
+        cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 41, 3),
+    ]
+    for variant in variants:
+        with suppress(Exception):
+            ok, decoded_info, _, _ = detector.detectAndDecodeMulti(variant)
+            if ok:
+                values.extend(value for value in decoded_info if value)
+        if values:
+            break
+        with suppress(Exception):
+            value, _, _ = detector.detectAndDecode(variant)
+            if value:
+                values.append(value)
+        if values:
+            break
+
+    return list(dict.fromkeys(values))
+
+
+async def create_contact_from_digital_qr(*, user_id: str, image_data: bytes) -> object:
+    """Decode a Cardly public card QR or contact vCard QR and save it as a contact."""
+    contacts = await create_contacts_from_qr(user_id=user_id, image_data=image_data)
+    return contacts[0]
+
+
+async def create_contacts_from_qr(*, user_id: str, image_data: bytes) -> list[object]:
+    """Decode a Cardly card/contact/bundle QR image and save one or more contacts."""
+    qr_values = decode_qr_values(image_data)
+    if not qr_values:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="No QR code found in image")
+
+    slug = _slug_from_cardly_qr(qr_values)
+    if not slug:
+        shared_contact_id = _contact_id_from_share_qr(qr_values)
+        if shared_contact_id:
+            shared_contact = await get_public_contact(shared_contact_id)
+            shared_payload = contact_to_summary(shared_contact, image_urls=[])
+            contact = await create_manual_contact(
+                user_id=user_id,
+                data={
+                    "name": shared_payload.get("name"),
+                    "company": shared_payload.get("company"),
+                    "position": shared_payload.get("position"),
+                    "email": shared_payload.get("email"),
+                    "phone": shared_payload.get("phone"),
+                    "website": shared_payload.get("website"),
+                    "address": shared_payload.get("address"),
+                    "social_profiles": shared_payload.get("social_profiles") or [],
+                    "professional_brief": shared_payload.get("professional_brief"),
+                    "keywords": shared_payload.get("keywords") or [],
+                    "highlights": shared_payload.get("highlights") or [],
+                    "tags": shared_payload.get("tags") or [],
+                    "notes": shared_payload.get("notes"),
+                    "source": "Contact QR",
+                },
+            )
+            return [contact]
+        bundle_id = _bundle_id_from_share_qr(qr_values)
+        if bundle_id:
+            contacts = await create_contacts_from_bundle(user_id=user_id, bundle_id=bundle_id)
+            if not contacts:
+                raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Contact bundle is empty")
+            return contacts
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="QR code does not contain a Cardly digital card or shared contact link",
+        )
+
+    card = await get_public_digital_card(slug)
+    social_profiles = _clean_list(getattr(card, "social_profiles", []))
+    for value in (getattr(card, "linkedin", None), getattr(card, "website", None)):
+        clean_value = _clean_str(value)
+        if clean_value and clean_value not in social_profiles:
+            social_profiles.append(clean_value)
+
+    contact = await create_manual_contact(
+        user_id=user_id,
+        data={
+            "name": getattr(card, "full_name", None),
+            "company": getattr(card, "company", None),
+            "position": getattr(card, "title", None),
+            "email": getattr(card, "email", None),
+            "phone": getattr(card, "phone", None),
+            "website": getattr(card, "website", None),
+            "address": getattr(card, "address", None),
+            "social_profiles": social_profiles,
+            "professional_brief": getattr(card, "professional_brief", None) or getattr(card, "bio", None),
+            "keywords": getattr(card, "keywords", []) or [],
+            "highlights": getattr(card, "highlights", []) or [],
+            "tags": getattr(card, "tags", []) or [],
+            "notes": getattr(card, "notes", None),
+            "qr_codes": qr_values,
+            "source": "Digital QR",
+        },
+    )
+    return [contact]
+
+
+async def update_contact(*, contact_id: str, user_id: str, data: dict) -> object:
+    """Update one finalized contact owned by the current user."""
+    from beanie import PydanticObjectId
+
+    from src.documents.models import FinalizedDocument
+
+    try:
+        contact_oid = PydanticObjectId(contact_id)
+        user_oid = PydanticObjectId(user_id)
+    except Exception as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Contact not found") from exc
+
+    contact = await FinalizedDocument.find_one(
+        FinalizedDocument.id == contact_oid,
+        FinalizedDocument.user_id == user_oid,
+    )
+    if contact is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Contact not found")
+
+    final_data = _manual_contact_final_data(data)
+    context_data = _contact_context({
+        **data,
+        "source": data.get("source") or (contact.context_data or {}).get("source") or "Manual",
+    })
+    contact.final_data = final_data
+    contact.final_json = final_data
+    contact.context_data = context_data
+    await contact.save()
+    return contact
+
+
 async def delete_contact(*, contact_id: str, user_id: str) -> None:
     """Delete one finalized contact owned by the current user."""
     from beanie import PydanticObjectId
@@ -325,6 +495,10 @@ async def delete_contact(*, contact_id: str, user_id: str) -> None:
     )
     if contact is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Contact not found")
+
+    if not contact.processing_id.startswith("MAN-"):
+        await hard_delete(processing_id=contact.processing_id, user_id=user_id)
+        return
 
     await contact.delete()
 
@@ -424,6 +598,12 @@ async def upsert_digital_card(*, user_id: str, data: dict) -> object:
         "whatsapp": _clean_str(data.get("whatsapp")),
         "linkedin": _clean_str(data.get("linkedin")),
         "website": _clean_str(data.get("website")),
+        "address": _clean_str(data.get("address")),
+        "social_profiles": _clean_list(data.get("social_profiles")),
+        "professional_brief": _clean_str(data.get("professional_brief")),
+        "keywords": _clean_list(data.get("keywords")),
+        "tags": _clean_list(data.get("tags")),
+        "notes": _clean_str(data.get("notes")),
         "highlights": _clean_list(data.get("highlights")),
         "is_public": bool(data.get("is_public", True)),
         "updated_at": datetime.utcnow(),
@@ -463,6 +643,7 @@ def contact_to_summary(contact: object, *, image_urls: list[str] | None = None) 
     if isinstance(phone, list):
         phone = ", ".join(str(item) for item in phone if item)
 
+    public_url = _contact_share_url(str(contact.id))
     return {
         "id": str(contact.id),
         "processing_id": contact.processing_id,
@@ -482,9 +663,140 @@ def contact_to_summary(contact: object, *, image_urls: list[str] | None = None) 
         "source": context.get("source"),
         "tags": context.get("tags") or [],
         "notes": context.get("notes"),
-        "qr_codes": data.get("qr_codes") or [],
+        "qr_codes": [public_url],
+        "public_url": public_url,
         "image_urls": image_urls or [],
         "confirmed_at": contact.confirmed_at,
+    }
+
+
+async def get_public_contact(contact_id: str) -> object:
+    """Return a contact by id for public sharing."""
+    from beanie import PydanticObjectId
+
+    from src.documents.models import FinalizedDocument
+
+    try:
+        contact_oid = PydanticObjectId(contact_id)
+    except Exception as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Contact not found") from exc
+
+    contact = await FinalizedDocument.get(contact_oid)
+    if contact is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Contact not found")
+    return contact
+
+
+async def create_contact_bundle(*, user_id: str, contact_ids: list[str]) -> object:
+    """Create a public bundle from contacts owned by the current user."""
+    from beanie import PydanticObjectId
+
+    from src.documents.models import ContactBundle, FinalizedDocument
+
+    try:
+        user_oid = PydanticObjectId(user_id)
+        contact_oids = [PydanticObjectId(contact_id) for contact_id in dict.fromkeys(contact_ids) if contact_id]
+    except Exception as exc:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Invalid contact id") from exc
+
+    if not contact_oids:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Select at least one contact")
+
+    contacts = []
+    for contact_oid in contact_oids:
+        contact = await FinalizedDocument.find_one(
+            FinalizedDocument.id == contact_oid,
+            FinalizedDocument.user_id == user_oid,
+        )
+        if contact is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="One or more contacts were not found")
+        contacts.append(contact)
+
+    snapshots = [_bundle_contact_snapshot(contact) for contact in contacts]
+    bundle = ContactBundle(user_id=user_oid, contacts=snapshots)
+    await bundle.insert()
+    return bundle
+
+
+async def list_contact_bundles(*, user_id: str) -> list[object]:
+    """Return contact bundles created by the current user."""
+    from beanie import PydanticObjectId
+
+    from src.documents.models import ContactBundle
+
+    try:
+        user_oid = PydanticObjectId(user_id)
+    except Exception as exc:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied") from exc
+
+    return await ContactBundle.find(ContactBundle.user_id == user_oid).sort(-ContactBundle.created_at).to_list()
+
+
+async def delete_contact_bundle(*, bundle_id: str, user_id: str) -> None:
+    """Delete one contact bundle owned by the current user."""
+    from beanie import PydanticObjectId
+
+    from src.documents.models import ContactBundle
+
+    try:
+        bundle_oid = PydanticObjectId(bundle_id)
+        user_oid = PydanticObjectId(user_id)
+    except Exception as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Contact bundle not found") from exc
+
+    bundle = await ContactBundle.find_one(ContactBundle.id == bundle_oid, ContactBundle.user_id == user_oid)
+    if bundle is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Contact bundle not found")
+    await bundle.delete()
+
+
+async def get_public_contact_bundle(bundle_id: str) -> object:
+    """Return a public contact bundle by id."""
+    from beanie import PydanticObjectId
+
+    from src.documents.models import ContactBundle
+
+    try:
+        bundle_oid = PydanticObjectId(bundle_id)
+    except Exception as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Contact bundle not found") from exc
+
+    bundle = await ContactBundle.get(bundle_oid)
+    if bundle is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Contact bundle not found")
+    return bundle
+
+
+async def create_contacts_from_bundle(*, user_id: str, bundle_id: str) -> list[object]:
+    """Copy all contacts from a public bundle into the current user's address book."""
+    bundle = await get_public_contact_bundle(bundle_id)
+    contacts = []
+    for snapshot in getattr(bundle, "contacts", []) or []:
+        contacts.append(await create_manual_contact(user_id=user_id, data={**snapshot, "source": "Contact Bundle"}))
+    return contacts
+
+
+def contact_bundle_to_response(bundle: object) -> dict:
+    public_url = _bundle_share_url(str(bundle.id))
+    contacts = [
+        {
+            **snapshot,
+            "id": f"{bundle.id}-{index}",
+            "processing_id": snapshot.get("processing_id") or f"BUNDLE-{index + 1}",
+            "qr_codes": [],
+            "public_url": None,
+            "image_urls": [],
+            "confirmed_at": snapshot.get("confirmed_at") or bundle.created_at,
+        }
+        for index, snapshot in enumerate(getattr(bundle, "contacts", []) or [])
+    ]
+    return {
+        "id": str(bundle.id),
+        "public_url": public_url,
+        "qr_svg": _qr_svg(public_url),
+        "contacts": contacts,
+        "total": len(contacts),
+        "created_at": bundle.created_at,
     }
 
 
@@ -505,6 +817,12 @@ def digital_card_to_response(card: object) -> dict:
         "whatsapp": card.whatsapp,
         "linkedin": card.linkedin,
         "website": card.website,
+        "address": getattr(card, "address", None),
+        "social_profiles": getattr(card, "social_profiles", []) or [],
+        "professional_brief": getattr(card, "professional_brief", None),
+        "keywords": getattr(card, "keywords", []) or [],
+        "tags": getattr(card, "tags", []) or [],
+        "notes": getattr(card, "notes", None),
         "highlights": card.highlights,
         "is_public": card.is_public,
         "public_url": public_url,
@@ -530,6 +848,12 @@ def public_digital_card_to_response(card: object) -> dict:
         "whatsapp",
         "linkedin",
         "website",
+        "address",
+        "social_profiles",
+        "professional_brief",
+        "keywords",
+        "tags",
+        "notes",
         "highlights",
         "qr_svg",
     )}
@@ -590,8 +914,79 @@ def _normalize_slug(value: str) -> str:
     return slug
 
 
+def _slug_from_cardly_qr(values: list[str]) -> str | None:
+    for value in values:
+        text = str(value or "").strip()
+        if not text:
+            continue
+        parsed = urlparse(text)
+        path = parsed.path if parsed.scheme else text
+        match = re.search(r"/card/([^/?#]+)", path)
+        if match:
+            return _normalize_slug(match.group(1))
+    return None
+
+
+def _contact_id_from_share_qr(values: list[str]) -> str | None:
+    for value in values:
+        text = str(value or "").strip()
+        if not text:
+            continue
+        parsed = urlparse(text)
+        path = parsed.path if parsed.scheme else text
+        match = re.search(r"/contact/([^/?#]+)", path)
+        if match:
+            return match.group(1)
+    return None
+
+
+def _bundle_id_from_share_qr(values: list[str]) -> str | None:
+    for value in values:
+        text = str(value or "").strip()
+        if not text:
+            continue
+        parsed = urlparse(text)
+        path = parsed.path if parsed.scheme else text
+        match = re.search(r"/bundle/([^/?#]+)", path)
+        if match:
+            return match.group(1)
+    return None
+
+
 def _digital_card_url(slug: str) -> str:
     return f"{str(settings.PUBLIC_BASE_URL).rstrip('/')}/card/{slug}"
+
+
+def _contact_share_url(contact_id: str) -> str:
+    return f"{str(settings.PUBLIC_BASE_URL).rstrip('/')}/contact/{contact_id}"
+
+
+def _bundle_share_url(bundle_id: str) -> str:
+    return f"{str(settings.PUBLIC_BASE_URL).rstrip('/')}/bundle/{bundle_id}"
+
+
+def _bundle_contact_snapshot(contact: object) -> dict:
+    payload = contact_to_summary(contact, image_urls=[])
+    return {
+        "processing_id": payload.get("processing_id"),
+        "name": payload.get("name"),
+        "company": payload.get("company"),
+        "position": payload.get("position"),
+        "email": payload.get("email"),
+        "phone": payload.get("phone"),
+        "website": payload.get("website"),
+        "address": payload.get("address"),
+        "social_profiles": payload.get("social_profiles") or [],
+        "professional_brief": payload.get("professional_brief"),
+        "keywords": payload.get("keywords") or [],
+        "highlights": payload.get("highlights") or [],
+        "event_name": payload.get("event_name"),
+        "location": payload.get("location"),
+        "source": payload.get("source"),
+        "tags": payload.get("tags") or [],
+        "notes": payload.get("notes"),
+        "confirmed_at": payload.get("confirmed_at"),
+    }
 
 
 def _qr_svg(value: str) -> str:
@@ -748,7 +1143,9 @@ async def hard_delete(processing_id: str, user_id: str) -> None:
 
     # 1. Identify all documents and storage paths
     uploaded_images = await UploadedImage.find(UploadedImage.processing_id == processing_id).to_list()
-    if not uploaded_images and not await BusinessCardScan.find_one(BusinessCardScan.processing_id == processing_id):
+    business_card_scan = await BusinessCardScan.find_one(BusinessCardScan.processing_id == processing_id)
+    finalized_doc = await FinalizedDocument.find_one(FinalizedDocument.processing_id == processing_id)
+    if not uploaded_images and business_card_scan is None and finalized_doc is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Document '{processing_id}' not found")
 
     # 2. Permission check (if not mock user)
@@ -757,6 +1154,8 @@ async def hard_delete(processing_id: str, user_id: str) -> None:
         for doc in uploaded_images:
             if doc.user_id != user_oid:
                 raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied")
+        if finalized_doc is not None and finalized_doc.user_id != user_oid:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied")
 
     public_ids = [doc.storage_path for doc in uploaded_images if doc.storage_path]
 
