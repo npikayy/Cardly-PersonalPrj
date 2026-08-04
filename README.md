@@ -1,24 +1,33 @@
 # Cardly Personal
 
-Cardly Personal is a personal contact-management app for turning business-card images into searchable contacts. It includes account auth, email OTP verification, OCR review, manual contact entry, saved contact details, business-card image preview, and a public digital contact card.
+Cardly Personal is a personal contact-management app for turning business-card images and QR links into searchable contacts. It includes account auth, email OTP verification, OCR review, manual contact entry, saved contact details, business-card image preview, QR contact sharing, QR bundles, and a public digital contact card.
 
 ## Features
 
 - Email/password authentication with OTP account verification.
 - Upload one or two business-card images.
 - Store original card images with Cloudinary.
-- Run OCR, review extracted fields, edit context, then save to contacts.
-- Manage saved contacts with search, detail pages, notes, tags, highlights, QR data, and original card images.
+- Run OCR with progress feedback, review extracted fields, edit context, then save to contacts.
+- Keep unfinished OCR reviews available in the scan queue until they are saved or deleted.
+- Manage saved contacts with search, detail pages, edit/delete actions, notes, highlights, QR data, and original card images.
 - Add contacts manually without OCR.
-- Create a public digital card at `/card/:slug`.
+- Add contacts by scanning a Cardly QR code from a digital card, shared contact, or contact bundle.
+- Generate downloadable QR codes for individual contacts.
+- Select multiple contacts and generate a downloadable QR bundle for sharing many contacts at once.
+- Open public contact bundle pages at `/bundle/:bundleId`.
+- Create a public digital card at `/card/:slug` with avatar, position, company, bio, contact channels, and downloadable QR.
+- Download QR codes as images with the Cardly logo in the center.
 - Switch the app language between Vietnamese and English.
 - Separate frontend routes for app pages:
   - `/contacts`
   - `/contacts/new`
+  - `/contacts/qr`
   - `/contacts/:contactId`
   - `/ocr`
   - `/digital`
   - `/card/:slug`
+  - `/contact/:contactId`
+  - `/bundle/:bundleId`
 
 ## Tech Stack
 
@@ -35,8 +44,9 @@ Frontend:
 
 - React
 - Vite
+- HeroUI
+- Tailwind CSS
 - Lucide React icons
-- Plain CSS with responsive layouts
 
 ## Project Structure
 
@@ -206,7 +216,18 @@ Contacts:
 ```text
 GET    /api/v1/documents/contacts
 POST   /api/v1/documents/contacts
+GET    /api/v1/documents/contacts/{contact_id}/public
+POST   /api/v1/documents/contacts/from-digital-qr
 DELETE /api/v1/documents/contacts/{contact_id}
+```
+
+Contact bundles:
+
+```text
+GET    /api/v1/documents/contact-bundles
+POST   /api/v1/documents/contact-bundles
+GET    /api/v1/documents/contact-bundles/{bundle_id}/public
+DELETE /api/v1/documents/contact-bundles/{bundle_id}
 ```
 
 Digital card:
