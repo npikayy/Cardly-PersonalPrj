@@ -20,6 +20,21 @@ class User(Document):
         name = "users"
 
 
+class UserAvatar(Document):
+    """Recently uploaded avatar image for quick reuse."""
+
+    user_id: Indexed(PydanticObjectId)  # type: ignore[valid-type]
+    url: str
+    public_id: str
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+    class Settings:
+        name = "user_avatars"
+        indexes = [
+            IndexModel([("user_id", ASCENDING), ("created_at", ASCENDING)]),
+        ]
+
+
 class RefreshToken(Document):
     """Hashed refresh token stored per session.  Revoked on logout / password reset."""
 

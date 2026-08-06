@@ -11,12 +11,14 @@ and are caught by the global AppException handler registered in main.py.
 
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, status
 
 from src.auth import service
 from src.auth.dependencies import get_current_user
-from src.auth.models import User
+from src.auth.models import User, UserAvatar
 from src.auth.schemas import (
+    AvatarListResponse,
+    AvatarResponse,
     LoginRequest,
     LogoutRequest,
     MessageResponse,
@@ -28,9 +30,12 @@ from src.auth.schemas import (
     UserResponse,
     VerifyOtpRequest,
 )
+from src.documents import dependencies as document_dependencies
+from src.documents import service as document_service
 
 router = APIRouter()
 CurrentUser = Annotated[User, Depends(get_current_user)]
+AvatarUpload = Annotated[UploadFile, Depends(document_dependencies.valid_upload_file)]
 
 
 @router.post(
@@ -127,6 +132,86 @@ async def update_me(body: ProfileUpdateRequest, current_user: CurrentUser) -> Us
     if body.avatar_url is not None:
         current_user.avatar_url = body.avatar_url.strip() or None
     await current_user.save()
+    return UserResponse(
+        id=str(current_user.id),
+        email=current_user.email,
+        full_name=current_user.full_name,
+        avatar_url=current_user.avatar_url,
+        is_active=current_user.is_active,
+    )
+
+
+@router.get(
+    "/me/avatars",
+    response_model=AvatarListResponse,
+    summary="List recently uploaded avatars for the current user",
+)
+async def list_me_avatars(current_user: CurrentUser) -> AvatarListResponse:
+    avatars = await UserAvatar.find(UserAvatar.user_id == current_user.id).sort(-UserAvatar.created_at).limit(5).to_list()
+    return AvatarListResponse(
+        avatars=[
+            AvatarResponse(id=str(avatar.id), url=avatar.url, created_at=avatar.created_at.isoformat())
+            for avatar in avatars
+        ]
+    )
+
+
+@router.post(
+    "/me/avatar",
+    response_model=UserResponse,
+    summary="Upload and update the current user's avatar",
+)
+async def upload_me_avatar(file: AvatarUpload, current_user: CurrentUser) -> UserResponse:
+    content = await file.read()
+    avatar_url, public_id = await document_service.save_avatar_to_storage(
+        file_content=content,
+        filename=file.filename or "profile-avatar",
+        user_id=str(current_user.id),
+        mime_type=file.content_type or "image/jpeg",
+    )
+    await UserAvatar(
+        user_id=current_user.id,
+        url=avatar_url,
+        public_id=public_id,
+    ).insert()
+
+    avatars = await UserAvatar.find(UserAvatar.user_id == current_user.id).sort(-UserAvatar.created_at).to_list()
+    for old_avatar in avatars[5:]:
+        await document_service.delete_image_from_storage(old_avatar.public_id)
+        await old_avatar.delete()
+
+    current_user.avatar_url = avatar_url
+    await current_user.save()
+    return UserResponse(
+        id=str(current_user.id),
+        email=current_user.email,
+        full_name=current_user.full_name,
+        avatar_url=current_user.avatar_url,
+        is_active=current_user.is_active,
+    )
+
+
+@router.delete(
+    "/me/avatars/{avatar_id}",
+    response_model=UserResponse,
+    summary="Delete one recently uploaded avatar",
+)
+async def delete_me_avatar(avatar_id: str, current_user: CurrentUser) -> UserResponse:
+    avatar = await UserAvatar.get(avatar_id)
+    if avatar is None or avatar.user_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Avatar not found",
+        )
+
+    await document_service.delete_image_from_storage(avatar.public_id)
+    deleted_url = avatar.url
+    await avatar.delete()
+
+    if current_user.avatar_url == deleted_url:
+        current_user.avatar_url = None
+        await current_user.save()
+
     return UserResponse(
         id=str(current_user.id),
         email=current_user.email,

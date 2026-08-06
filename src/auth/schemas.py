@@ -95,6 +95,16 @@ class UserResponse(CustomModel):
     is_active: bool
 
 
+class AvatarResponse(CustomModel):
+    id: str
+    url: str
+    created_at: str
+
+
+class AvatarListResponse(CustomModel):
+    avatars: list[AvatarResponse]
+
+
 class MessageResponse(CustomModel):
     """Generic success response for operations that return no data."""
     success: bool = True

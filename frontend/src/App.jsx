@@ -15,6 +15,7 @@ import {
   Download,
   FileText,
   Globe2,
+  HelpCircle,
   Languages,
   Layers,
   Link,
@@ -61,20 +62,21 @@ const I18N = {
   vi: {
     navContacts: "Danh bạ",
     navManual: "Thêm liên hệ",
-    navQrContact: "Thêm bằng QR",
-    navOcr: "Thêm bằng OCR",
+    navQrContact: "Quét QR",
+    navOcr: "Quét danh thiếp",
     navDigital: "Thẻ số",
     login: "Đăng nhập",
     register: "Đăng ký",
     otp: "OTP",
     logout: "Đăng xuất",
     refresh: "Làm mới",
+    instructionButton: "Hướng dẫn",
     verified: "Đã xác thực",
     session: "Phiên làm việc",
     contactsMetric: "Liên hệ",
     scansMetric: "Bản scan",
     contactsTitle: "Danh bạ đã lưu",
-    contactsDesc: "Các liên hệ đã xác nhận từ OCR hoặc được thêm thủ công.",
+    contactsDesc: "Các liên hệ đã xác nhận từ ảnh danh thiếp hoặc được thêm thủ công.",
     contactsHeroTitle: "Không gian quản lý quan hệ của bạn",
     contactsHeroDesc: "Tìm, mở và chăm sóc từng liên hệ từ danh thiếp trong một giao diện gọn gàng, có ngữ cảnh.",
     quickCapture: "Scan nhanh",
@@ -92,8 +94,8 @@ const I18N = {
     qrContactTitle: "Lưu liên hệ từ QR Cardly",
     qrContactDesc: "Upload ảnh mã QR chứa link thẻ số Cardly để lưu nhanh người đó vào danh bạ.",
     qrContactUpload: "Ảnh mã QR",
-    qrContactButton: "Lưu contact từ QR",
-    qrContactSaved: "Đã lưu contact từ QR.",
+    qrContactButton: "Lưu liên hệ từ QR",
+    qrContactSaved: "Đã lưu liên hệ từ QR.",
     qrBundleSaved: "Đã lưu {count} liên hệ từ QR bundle.",
     qrContactRequired: "Vui lòng chọn ảnh QR trước.",
     qrContactHint: "QR hợp lệ là mã được tải từ thẻ số hoặc trang chi tiết danh bạ của Cardly.",
@@ -112,9 +114,9 @@ const I18N = {
     manualHeroTitle: "Ghi lại liên hệ mới trong vài thao tác",
     manualHeroDesc: "Phù hợp cho cuộc gặp nhanh, cuộc gọi hoặc những liên hệ chưa có ảnh danh thiếp.",
     backContacts: "Về danh bạ",
-    switchOcr: "Chuyển sang OCR",
+    switchOcr: "Chuyển sang quét danh thiếp",
     manualSourceTitle: "Nguồn dữ liệu",
-    manualSourceDesc: "Liên hệ thủ công dùng chung danh bạ với liên hệ từ OCR.",
+    manualSourceDesc: "Liên hệ thủ công dùng chung danh bạ với liên hệ từ ảnh danh thiếp.",
     noImageTitle: "Liên hệ này chưa có ảnh danh thiếp",
     noImageDesc: "Liên hệ thêm thủ công hoặc bản scan cũ có thể không còn ảnh gốc.",
     detailMissingTitle: "Không tìm thấy liên hệ",
@@ -125,16 +127,16 @@ const I18N = {
     cancelEdit: "Huỷ chỉnh sửa",
     contactUpdated: "Đã cập nhật liên hệ.",
     contactInfo: "Thông tin liên hệ",
-    contactInfoDesc: "Chi tiết được lưu từ OCR hoặc nhập thủ công.",
+    contactInfoDesc: "Chi tiết được lưu từ ảnh danh thiếp hoặc nhập thủ công.",
     meetingContext: "Ngữ cảnh gặp gỡ",
     meetingContextDesc: "Nguồn, sự kiện và ghi chú gắn với liên hệ.",
     insight: "Gợi ý & ghi chú",
-    insightDesc: "Tóm tắt, QR và dữ liệu enrichment.",
+    insightDesc: "Tóm tắt, QR và các ghi chú bổ sung.",
     summary: "Tóm tắt",
     noSummary: "Chưa có ghi chú hoặc tóm tắt.",
     highlights: "Điểm nổi bật",
     businessCardImages: "Ảnh danh thiếp",
-    businessCardImagesDesc: "Ảnh gốc đã lưu trên Cloudinary trước khi OCR.",
+    businessCardImagesDesc: "Ảnh gốc đã lưu trên Cloudinary trước khi đọc thông tin.",
     imagesCount: "{count} ảnh",
     frontSide: "Mặt trước",
     imageIndex: "Ảnh {count}",
@@ -142,20 +144,20 @@ const I18N = {
     uploadFront: "Ảnh mặt trước",
     uploadBack: "Ảnh mặt sau",
     chooseImage: "Chọn ảnh",
-    uploadOcr: "Upload OCR",
+    uploadOcr: "Upload danh thiếp",
     scanQueue: "Hàng đợi scan",
     scanQueueDesc: "{count} bản ghi đang hiển thị.",
     clearQueue: "Xoá hàng đợi",
     findScan: "Tìm scan",
     scanPlaceholder: "Processing ID, file, trạng thái",
     emptyScansTitle: "Chưa có bản scan",
-    emptyScansDesc: "Upload ảnh để tạo bản ghi OCR.",
+    emptyScansDesc: "Upload ảnh để tạo bản scan danh thiếp.",
     preview: "Xem trước",
     noSelectedScan: "Chưa chọn bản scan",
     previewEmpty: "Chọn một bản scan để xem ảnh.",
-    ocrResult: "Kết quả OCR",
-    ocrResultDesc: "Chạy OCR, kiểm tra dữ liệu, rồi lưu vào danh bạ.",
-    runOcr: "Chạy OCR",
+    ocrResult: "Kết quả quét danh thiếp",
+    ocrResultDesc: "Đọc thông tin từ ảnh, kiểm tra dữ liệu, rồi lưu vào danh bạ.",
+    runOcr: "Đọc danh thiếp",
     saveContact: "Lưu vào danh bạ",
     deleteScan: "Xoá scan",
     digitalTitle: "Thẻ liên hệ số",
@@ -171,7 +173,7 @@ const I18N = {
     viewContacts: "Quản lý danh bạ",
     viewManual: "Thêm liên hệ",
     viewDetail: "Chi tiết liên hệ",
-    viewOcr: "OCR Workspace",
+    viewOcr: "Quét danh thiếp",
     viewDigital: "Thẻ liên hệ số",
     eyebrowContacts: "Danh bạ",
     eyebrowManual: "Nhập thủ công",
@@ -194,8 +196,8 @@ const I18N = {
     personalContact: "Liên hệ cá nhân",
     noCompany: "Chưa có công ty",
     uploadDesc: "Hỗ trợ ảnh mặt trước và mặt sau.",
-    reviewEmptyTitle: "Chưa có dữ liệu OCR",
-    reviewEmptyDesc: "Chọn một bản scan trong hàng đợi rồi chạy OCR để xem dữ liệu trích xuất.",
+    reviewEmptyTitle: "Chưa có dữ liệu quét",
+    reviewEmptyDesc: "Chọn một bản scan trong hàng đợi rồi đọc danh thiếp để xem dữ liệu trích xuất.",
     saveEdits: "Lưu chỉnh sửa",
     yourName: "Tên của bạn",
     titleCompany: "Chức vụ · Công ty",
@@ -213,10 +215,10 @@ const I18N = {
     logoutSuccess: "Đã đăng xuất.",
     manualCreated: "Đã tạo liên hệ thủ công.",
     frontImageRequired: "Vui lòng chọn ảnh mặt trước trước khi upload.",
-    ocrDone: "OCR hoàn tất, dữ liệu review đã sẵn sàng.",
-    ocrRunningTitle: "Đang chạy OCR",
+    ocrDone: "Đã đọc xong danh thiếp, dữ liệu review đã sẵn sàng.",
+    ocrRunningTitle: "Đang đọc danh thiếp",
     ocrRunningDesc: "Hệ thống đang đọc ảnh, trích xuất thông tin và chuẩn bị dữ liệu review.",
-    ocrProgress: "Tiến trình OCR",
+    ocrProgress: "Tiến trình đọc danh thiếp",
     reviewSaved: "Đã lưu chỉnh sửa review.",
     contactSaved: "Đã lưu vào danh bạ.",
     scanDeleted: "Đã xoá bản scan.",
@@ -224,11 +226,22 @@ const I18N = {
     contactDeleted: "Đã xoá liên hệ.",
     digitalSaved: "Đã lưu thẻ số.",
     profileUpdated: "Đã cập nhật ảnh đại diện.",
+    updateAvatar: "Cập nhật ảnh đại diện",
+    avatarPanelTitle: "Ảnh đại diện",
+    avatarPanelDesc: "Ảnh này sẽ xuất hiện ở sidebar và trên thẻ liên hệ số công khai.",
     avatarUrl: "Ảnh đại diện",
     avatarUrlPlaceholder: "Dán URL ảnh đại diện",
+    avatarFile: "Ảnh từ máy",
+    chooseAvatar: "Chọn ảnh đại diện",
+    uploadAvatarFile: "Upload ảnh từ máy",
+    avatarSourceUrl: "Dùng URL",
+    avatarSourceFile: "Dùng ảnh trên máy",
+    recentAvatars: "Ảnh đã dùng gần đây",
+    recentAvatarsDesc: "Chọn nhanh một trong 5 ảnh đại diện gần nhất.",
+    avatarDeleted: "Đã xóa ảnh đại diện.",
     uploadDone: "Đã upload {id}.",
     uploadRunningTitle: "Đang upload ảnh",
-    uploadRunningDesc: "Ảnh danh thiếp đang được tải lên workspace OCR.",
+    uploadRunningDesc: "Ảnh danh thiếp đang được tải lên khu vực quét.",
     uploadProgress: "Tiến trình upload",
     welcomeTitle: "Chào mừng trở lại, {name}",
     welcomeDesc: "Cardly là không gian làm việc cá nhân để bạn scan danh thiếp, kiểm tra dữ liệu, lưu ngữ cảnh gặp gỡ và biến mỗi kết nối thành một liên hệ dễ tìm lại.",
@@ -237,14 +250,12 @@ const I18N = {
     welcomeFooter: "Cardly gom toàn bộ luồng quản lý liên hệ vào một nơi.",
     welcomeFeatureContacts: "Danh bạ tập trung",
     welcomeFeatureContactsDesc: "Tìm kiếm, xem chi tiết, chỉnh sửa và quản lý ngữ cảnh của từng liên hệ.",
-    welcomeFeatureOcr: "OCR danh thiếp",
-    welcomeFeatureOcrDesc: "Upload ảnh danh thiếp, đọc dữ liệu, review kết quả rồi lưu thành contact sạch.",
+    welcomeFeatureOcr: "Quét danh thiếp",
+    welcomeFeatureOcrDesc: "Upload ảnh danh thiếp, đọc dữ liệu, kiểm tra kết quả rồi lưu thành liên hệ sạch.",
     welcomeFeatureQr: "Chia sẻ bằng QR",
     welcomeFeatureQrDesc: "Tạo QR cho từng contact hoặc bundle nhiều contact để người khác lưu nhanh.",
     welcomeFeatureDigital: "Thẻ liên hệ số",
     welcomeFeatureDigitalDesc: "Tạo hồ sơ công khai, cập nhật thông tin cá nhân và chia sẻ bằng link hoặc QR.",
-    welcomeFeatureSecurity: "Tài khoản xác thực",
-    welcomeFeatureSecurityDesc: "Đăng ký bằng OTP, đăng nhập bảo mật và lưu dữ liệu theo tài khoản riêng.",
     welcomeStart: "Bắt đầu sử dụng",
     welcomeDoNotShow: "Không hiện lại",
     digitalProfileSection: "Thông tin hiển thị",
@@ -269,36 +280,37 @@ const I18N = {
     confirmUpdateContactDesc: "Thông tin hiện tại của liên hệ sẽ được cập nhật.",
     confirmDeleteContactTitle: "Xoá liên hệ này?",
     confirmDeleteContactDesc: "Liên hệ sẽ bị xoá khỏi danh bạ. Thao tác này không thể hoàn tác.",
+    confirmDeleteAvatarTitle: "Xóa ảnh đại diện này?",
+    confirmDeleteAvatarDesc: "Ảnh sẽ bị xóa khỏi Cloudinary và không còn xuất hiện trong danh sách gần đây.",
     confirmDeleteScanTitle: "Xoá bản scan này?",
-    confirmDeleteScanDesc: "Ảnh và dữ liệu OCR liên quan đến bản scan sẽ bị xoá khỏi hàng đợi.",
+    confirmDeleteScanDesc: "Ảnh và dữ liệu đã đọc liên quan đến bản scan sẽ bị xoá khỏi hàng đợi.",
     confirmClearQueueTitle: "Xoá toàn bộ hàng đợi?",
     confirmClearQueueDesc: "Tất cả bản scan đang chờ xử lý sẽ bị xoá.",
-    confirmReviewSaveTitle: "Lưu chỉnh sửa OCR?",
+    confirmReviewSaveTitle: "Lưu chỉnh sửa dữ liệu quét?",
     confirmReviewSaveDesc: "Dữ liệu review hiện tại sẽ được cập nhật trước khi lưu vào danh bạ.",
     confirmSaveContactTitle: "Lưu vào danh bạ?",
     confirmSaveContactDesc: "Bản scan đã review sẽ trở thành một liên hệ chính thức trong danh bạ.",
     confirmDigitalSaveTitle: "Lưu thẻ số?",
     confirmDigitalSaveDesc: "Thông tin thẻ liên hệ số công khai sẽ được cập nhật.",
-    confirmAvatarSaveTitle: "Cập nhật ảnh đại diện?",
-    confirmAvatarSaveDesc: "Ảnh này sẽ được dùng cho sidebar và thẻ liên hệ số.",
   },
   en: {
     navContacts: "Contacts",
     navManual: "Add contact",
-    navQrContact: "Add by QR",
-    navOcr: "Add by OCR",
+    navQrContact: "Scan QR",
+    navOcr: "Scan card",
     navDigital: "Digital card",
     login: "Log in",
     register: "Register",
     otp: "OTP",
     logout: "Log out",
     refresh: "Refresh",
+    instructionButton: "Guide",
     verified: "Verified",
     session: "Session",
     contactsMetric: "Contacts",
     scansMetric: "Scans",
     contactsTitle: "Saved contacts",
-    contactsDesc: "Contacts confirmed from OCR or added manually.",
+    contactsDesc: "Contacts confirmed from card scans or added manually.",
     contactsHeroTitle: "Your relationship workspace",
     contactsHeroDesc: "Find, open and nurture every business-card contact in one focused, contextual interface.",
     quickCapture: "Quick scan",
@@ -336,9 +348,9 @@ const I18N = {
     manualHeroTitle: "Capture a new contact in a few fields",
     manualHeroDesc: "Useful for quick meetings, calls, or contacts without a business-card image.",
     backContacts: "Back to contacts",
-    switchOcr: "Go to OCR",
+    switchOcr: "Go to card scanning",
     manualSourceTitle: "Data source",
-    manualSourceDesc: "Manual contacts live in the same address book as OCR contacts.",
+    manualSourceDesc: "Manual contacts live in the same address book as scanned-card contacts.",
     noImageTitle: "This contact has no business-card image",
     noImageDesc: "Manual contacts or older scans may not have an original image attached.",
     detailMissingTitle: "Contact not found",
@@ -349,16 +361,16 @@ const I18N = {
     cancelEdit: "Cancel edit",
     contactUpdated: "Contact updated.",
     contactInfo: "Contact information",
-    contactInfoDesc: "Details saved from OCR or entered manually.",
+    contactInfoDesc: "Details saved from a card scan or entered manually.",
     meetingContext: "Meeting context",
     meetingContextDesc: "Source, event and notes attached to this contact.",
     insight: "Insights & notes",
-    insightDesc: "Summary, QR codes and enrichment data.",
+    insightDesc: "Summary, QR codes and additional notes.",
     summary: "Summary",
     noSummary: "No notes or summary yet.",
     highlights: "Highlights",
     businessCardImages: "Business-card images",
-    businessCardImagesDesc: "Original Cloudinary images saved before OCR.",
+    businessCardImagesDesc: "Original Cloudinary images saved before reading card details.",
     imagesCount: "{count} images",
     frontSide: "Front side",
     imageIndex: "Image {count}",
@@ -366,20 +378,20 @@ const I18N = {
     uploadFront: "Front image",
     uploadBack: "Back image",
     chooseImage: "Choose image",
-    uploadOcr: "Upload OCR",
+    uploadOcr: "Upload card",
     scanQueue: "Scan queue",
     scanQueueDesc: "{count} records shown.",
     clearQueue: "Clear queue",
     findScan: "Find scan",
     scanPlaceholder: "Processing ID, file, status",
     emptyScansTitle: "No scans yet",
-    emptyScansDesc: "Upload an image to create an OCR record.",
+    emptyScansDesc: "Upload an image to create a card scan.",
     preview: "Preview",
     noSelectedScan: "No scan selected",
     previewEmpty: "Select a scan to preview the image.",
-    ocrResult: "OCR result",
-    ocrResultDesc: "Run OCR, review the data, then save it to contacts.",
-    runOcr: "Run OCR",
+    ocrResult: "Card scan result",
+    ocrResultDesc: "Read details from the image, review the data, then save it to contacts.",
+    runOcr: "Read card",
     saveContact: "Save contact",
     deleteScan: "Delete scan",
     digitalTitle: "Digital contact card",
@@ -395,7 +407,7 @@ const I18N = {
     viewContacts: "Contact management",
     viewManual: "Add contact",
     viewDetail: "Contact details",
-    viewOcr: "OCR Workspace",
+    viewOcr: "Card scanning",
     viewDigital: "Digital contact card",
     eyebrowContacts: "Contacts",
     eyebrowManual: "Manual entry",
@@ -418,8 +430,8 @@ const I18N = {
     personalContact: "Personal contact",
     noCompany: "No company yet",
     uploadDesc: "Supports front and back images.",
-    reviewEmptyTitle: "No OCR data loaded",
-    reviewEmptyDesc: "Select a scan from the queue, then run OCR to see extracted fields.",
+    reviewEmptyTitle: "No scan data loaded",
+    reviewEmptyDesc: "Select a scan from the queue, then read the card to see extracted fields.",
     saveEdits: "Save edits",
     yourName: "Your name",
     titleCompany: "Position · Company",
@@ -437,10 +449,10 @@ const I18N = {
     logoutSuccess: "Logged out.",
     manualCreated: "Manual contact created.",
     frontImageRequired: "Please choose the front image before uploading.",
-    ocrDone: "OCR complete. Review data is ready.",
-    ocrRunningTitle: "Running OCR",
+    ocrDone: "Card reading complete. Review data is ready.",
+    ocrRunningTitle: "Reading card",
     ocrRunningDesc: "The system is reading the image, extracting details and preparing review data.",
-    ocrProgress: "OCR progress",
+    ocrProgress: "Card reading progress",
     reviewSaved: "Review edits saved.",
     contactSaved: "Saved to contacts.",
     scanDeleted: "Scan deleted.",
@@ -448,11 +460,22 @@ const I18N = {
     contactDeleted: "Contact deleted.",
     digitalSaved: "Digital card saved.",
     profileUpdated: "Avatar updated.",
+    updateAvatar: "Update avatar",
+    avatarPanelTitle: "Avatar",
+    avatarPanelDesc: "This image appears in the sidebar and on your public digital contact card.",
     avatarUrl: "Avatar",
     avatarUrlPlaceholder: "Paste your avatar image URL",
+    avatarFile: "Image from device",
+    chooseAvatar: "Choose avatar image",
+    uploadAvatarFile: "Upload from device",
+    avatarSourceUrl: "Use URL",
+    avatarSourceFile: "Import image",
+    recentAvatars: "Recent avatars",
+    recentAvatarsDesc: "Quickly reuse one of your 5 most recent avatars.",
+    avatarDeleted: "Avatar deleted.",
     uploadDone: "Uploaded {id}.",
     uploadRunningTitle: "Uploading images",
-    uploadRunningDesc: "Business-card images are being uploaded to the OCR workspace.",
+    uploadRunningDesc: "Business-card images are being uploaded to the scan workspace.",
     uploadProgress: "Upload progress",
     welcomeTitle: "Welcome back, {name}",
     welcomeDesc: "Cardly is your personal workspace for scanning business cards, reviewing data, preserving meeting context and turning every connection into a contact you can find again.",
@@ -461,14 +484,12 @@ const I18N = {
     welcomeFooter: "Cardly keeps your contact workflow in one place.",
     welcomeFeatureContacts: "Centralized contacts",
     welcomeFeatureContactsDesc: "Search, inspect, edit and manage context for each saved contact.",
-    welcomeFeatureOcr: "Business-card OCR",
+    welcomeFeatureOcr: "Business-card scanning",
     welcomeFeatureOcrDesc: "Upload card images, extract details, review the result and save clean contacts.",
     welcomeFeatureQr: "QR sharing",
     welcomeFeatureQrDesc: "Create QR codes for individual contacts or multi-contact bundles.",
     welcomeFeatureDigital: "Digital contact card",
     welcomeFeatureDigitalDesc: "Create a public profile, update personal details and share it by link or QR.",
-    welcomeFeatureSecurity: "Verified account",
-    welcomeFeatureSecurityDesc: "Register with OTP, sign in securely and keep data scoped to your account.",
     welcomeStart: "Start using Cardly",
     welcomeDoNotShow: "Do not show again",
     digitalProfileSection: "Display profile",
@@ -493,18 +514,18 @@ const I18N = {
     confirmUpdateContactDesc: "The current contact information will be updated.",
     confirmDeleteContactTitle: "Delete this contact?",
     confirmDeleteContactDesc: "This contact will be removed from your address book. This cannot be undone.",
+    confirmDeleteAvatarTitle: "Delete this avatar?",
+    confirmDeleteAvatarDesc: "The image will be removed from Cloudinary and from your recent avatars.",
     confirmDeleteScanTitle: "Delete this scan?",
-    confirmDeleteScanDesc: "The image and OCR data attached to this scan will be removed from the queue.",
+    confirmDeleteScanDesc: "The image and extracted data attached to this scan will be removed from the queue.",
     confirmClearQueueTitle: "Clear the whole queue?",
     confirmClearQueueDesc: "All pending scan records will be deleted.",
-    confirmReviewSaveTitle: "Save OCR edits?",
+    confirmReviewSaveTitle: "Save scan edits?",
     confirmReviewSaveDesc: "The current review data will be updated before saving to contacts.",
     confirmSaveContactTitle: "Save to contacts?",
     confirmSaveContactDesc: "The reviewed scan will become an official contact in your address book.",
     confirmDigitalSaveTitle: "Save digital card?",
     confirmDigitalSaveDesc: "Your public digital contact card information will be updated.",
-    confirmAvatarSaveTitle: "Update avatar?",
-    confirmAvatarSaveDesc: "This image will be used in the sidebar and your digital card.",
   },
 };
 
@@ -565,6 +586,7 @@ function App() {
   const [contextDraft, setContextDraft] = useState({});
   const [contacts, setContacts] = useState([]);
   const [digitalCard, setDigitalCard] = useState(null);
+  const [avatarHistory, setAvatarHistory] = useState([]);
   const [publicCard, setPublicCard] = useState(null);
   const [publicContact, setPublicContact] = useState(null);
   const [publicBundle, setPublicBundle] = useState(null);
@@ -578,6 +600,7 @@ function App() {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [confirmDialog, setConfirmDialog] = useState(null);
   const [showWelcomePanel, setShowWelcomePanel] = useState(false);
+  const [instructionView, setInstructionView] = useState(null);
 
   const selectedDocument = documents.find((item) => item.processing_id === selectedId);
   const selectedContact = contacts.find((item) => item.id === selectedContactId);
@@ -736,6 +759,7 @@ function App() {
         await loadDocuments();
         await loadContacts();
         await loadDigitalCard();
+        await loadAvatarHistory();
         await loadContactBundles();
       }
     }
@@ -927,21 +951,48 @@ function App() {
   }
 
   async function updateProfile(form) {
-    const confirmed = await askConfirm({
-      tone: "primary",
-      title: t("confirmAvatarSaveTitle"),
-      message: t("confirmAvatarSaveDesc"),
-      confirmLabel: t("confirmUpdate"),
-    });
-    if (!confirmed) return null;
-
     return runTask("profile-update", async () => {
       const payload = await request("/auth/me", {
         method: "PATCH",
         body: JSON.stringify(form),
       });
       setUser(payload);
+      await loadAvatarHistory();
       notify(t("profileUpdated"));
+      return payload;
+    });
+  }
+
+  async function uploadAvatarImage(file) {
+    if (!file) return null;
+
+    return runTask("avatar-upload", async () => {
+      const body = new FormData();
+      body.append("file", file);
+      const payload = await uploadWithProgress("/auth/me/avatar", body, setUploadProgress);
+      setUser(payload);
+      await loadAvatarHistory();
+      notify(t("profileUpdated"));
+      return payload;
+    });
+  }
+
+  async function deleteAvatarImage(avatarId) {
+    const confirmed = await askConfirm({
+      tone: "danger",
+      title: t("confirmDeleteAvatarTitle"),
+      message: t("confirmDeleteAvatarDesc"),
+      confirmLabel: t("confirmDelete"),
+    });
+    if (!confirmed) return null;
+
+    return runTask("avatar-delete", async () => {
+      const payload = await request(`/auth/me/avatars/${encodeURIComponent(avatarId)}`, {
+        method: "DELETE",
+      });
+      setUser(payload);
+      await loadAvatarHistory();
+      notify(t("avatarDeleted"));
       return payload;
     });
   }
@@ -958,6 +1009,7 @@ function App() {
       await loadDocuments(tokens.access_token);
       await loadContacts(tokens.access_token);
       await loadDigitalCard(tokens.access_token);
+      await loadAvatarHistory(tokens.access_token);
       await loadContactBundles(tokens.access_token);
       setShowWelcomePanel(shouldShowWelcome(profile));
       navigateTo("/contacts", setCurrentPath);
@@ -1008,6 +1060,7 @@ function App() {
       });
     }
     clearSession();
+    setAvatarHistory([]);
     navigateTo("/login", setCurrentPath);
     notify(t("logoutSuccess"));
   }
@@ -1033,6 +1086,14 @@ function App() {
       const payload = await request("/documents/digital-card", { tokenOverride });
       setDigitalCard(payload);
       return payload;
+    });
+  }
+
+  async function loadAvatarHistory(tokenOverride) {
+    return runTask("avatar-history", async () => {
+      const payload = await request("/auth/me/avatars", { tokenOverride });
+      setAvatarHistory(payload.avatars || []);
+      return payload.avatars || [];
     });
   }
 
@@ -1322,6 +1383,7 @@ function App() {
     await loadDocuments();
     await loadContacts();
     await loadDigitalCard();
+    await loadAvatarHistory();
     await loadContactBundles();
   }
 
@@ -1339,6 +1401,7 @@ function App() {
         method: "PUT",
         body: JSON.stringify(normalizeDigitalCardPayload({
           ...form,
+          slug: emailSlug(user?.email || form.email || form.slug),
           photo_url: user?.avatar_url || form.photo_url,
         })),
       });
@@ -1418,6 +1481,7 @@ function App() {
           busy={busy}
           user={user}
           onRefresh={refreshWorkspace}
+          onShowInstructions={() => setInstructionView(activeView)}
         />
         {activeView === "contacts" && (
           <ContactsView
@@ -1509,6 +1573,10 @@ function App() {
             busy={busy}
             onSave={saveDigitalCard}
             onProfileSave={updateProfile}
+            onAvatarUpload={uploadAvatarImage}
+            onAvatarDelete={deleteAvatarImage}
+            avatarHistory={avatarHistory}
+            uploadProgress={uploadProgress}
           />
         )}
         </div>
@@ -1519,6 +1587,14 @@ function App() {
           user={user}
           onClose={() => dismissWelcome()}
           onDoNotShowAgain={() => dismissWelcome({ doNotShowAgain: true })}
+        />
+      )}
+      {instructionView && (
+        <InstructionDialog
+          t={t}
+          language={language}
+          view={instructionView}
+          onClose={() => setInstructionView(null)}
         />
       )}
       {confirmDialog && <ConfirmDialog {...confirmDialog} />}
@@ -1538,60 +1614,41 @@ function BrandLogo({ className = "size-12 rounded-2xl" }) {
 function WelcomePanel({ t, user, onClose, onDoNotShowAgain }) {
   const displayName = user?.full_name || user?.email?.split("@")[0] || "Cardly user";
   const features = [
-    [ContactRound, t("welcomeFeatureContacts"), t("welcomeFeatureContactsDesc")],
-    [FileText, t("welcomeFeatureOcr"), t("welcomeFeatureOcrDesc")],
-    [QrCode, t("welcomeFeatureQr"), t("welcomeFeatureQrDesc")],
-    [Globe2, t("welcomeFeatureDigital"), t("welcomeFeatureDigitalDesc")],
-    [ShieldCheck, t("welcomeFeatureSecurity"), t("welcomeFeatureSecurityDesc")],
+    [ContactRound, t("welcomeFeatureContacts"), t("welcomeFeatureContactsDesc"), "from-sky-50 to-white text-sky-700 ring-sky-100"],
+    [FileText, t("welcomeFeatureOcr"), t("welcomeFeatureOcrDesc"), "from-emerald-50 to-white text-emerald-700 ring-emerald-100"],
+    [QrCode, t("welcomeFeatureQr"), t("welcomeFeatureQrDesc"), "from-amber-50 to-white text-amber-700 ring-amber-100"],
+    [Globe2, t("welcomeFeatureDigital"), t("welcomeFeatureDigitalDesc"), "from-fuchsia-50 to-white text-fuchsia-700 ring-fuchsia-100"],
   ];
-  const previewFeatures = features.slice(0, 4);
 
   return (
-    <div className="fixed inset-0 z-40 grid place-items-center bg-slate-950/55 p-4 backdrop-blur-md">
-      <section className="max-h-[calc(100vh-2rem)] w-full max-w-4xl overflow-y-auto overflow-x-hidden rounded-[2rem] border border-white/70 bg-white shadow-[0_32px_110px_rgba(2,6,23,0.32)]">
-        <div className="grid grid-cols-[minmax(0,1.2fr)_minmax(280px,0.8fr)] gap-5 bg-[radial-gradient(circle_at_84%_8%,rgba(15,23,42,0.14),transparent_28%),linear-gradient(135deg,#ffffff,#f8fafc_52%,#eef2f7)] p-6 max-[900px]:grid-cols-1 max-[760px]:p-5">
-          <div className="grid content-between gap-5">
+    <div className="fixed inset-0 z-40 grid place-items-center bg-slate-950/60 p-4 backdrop-blur-md">
+      <section className="max-h-[calc(100vh-2rem)] w-full max-w-5xl overflow-y-auto overflow-x-hidden rounded-[2rem] border border-white/70 bg-white shadow-[0_34px_120px_rgba(2,6,23,0.34)]">
+        <div className="grid min-h-[460px] bg-[linear-gradient(135deg,#f8fbff,#ffffff_34%,#f6f2ff_68%,#fff7ed)] p-6 max-[760px]:min-h-[380px] max-[760px]:p-5">
+          <div className="grid content-between gap-7">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="text-xs font-black uppercase tracking-normal text-slate-500">{t("welcomeKicker")}</p>
-                <h3 className="mt-2 max-w-2xl text-4xl font-black leading-tight tracking-normal text-slate-950 max-[760px]:text-3xl">
+                <p className="inline-flex min-h-8 items-center rounded-full bg-white/82 px-3 text-xs font-black uppercase tracking-normal text-slate-500 shadow-sm ring-1 ring-slate-200">{t("welcomeKicker")}</p>
+                <h3 className="mt-4 max-w-3xl text-6xl font-black leading-none tracking-normal text-slate-950 max-[900px]:text-5xl max-[760px]:text-4xl">
                   {t("welcomeTitle", { name: displayName })}
                 </h3>
               </div>
               <Badge tone="success">{user?.is_active ? t("verified") : t("session")}</Badge>
             </div>
-            <p className="max-w-2xl text-sm font-semibold leading-7 text-slate-600">{t("welcomeDesc")}</p>
+            <p className="max-w-3xl text-lg font-semibold leading-8 text-slate-600 max-[760px]:text-base">{t("welcomeDesc")}</p>
             <div className="flex flex-wrap gap-2">
               <Badge tone="neutral">{t("navContacts")}</Badge>
               <Badge tone="neutral">{t("navOcr")}</Badge>
+              <Badge tone="neutral">{t("navQrContact")}</Badge>
               <Badge tone="neutral">{t("navDigital")}</Badge>
             </div>
           </div>
-
-          <div className="grid gap-2.5 rounded-[1.5rem] border border-white/80 bg-white/82 p-3 shadow-2xl shadow-slate-900/10 backdrop-blur-xl">
-            <div className="flex items-center gap-3 border-b border-slate-200 pb-3">
-              <Avatar value={user?.full_name || user?.email} src={user?.avatar_url} />
-              <div className="min-w-0">
-                <strong className="block truncate text-sm text-slate-950">{displayName}</strong>
-                <p className="truncate text-xs font-semibold text-slate-500">{t("welcomePreviewTitle")}</p>
-              </div>
-            </div>
-            {previewFeatures.map(([Icon, label]) => (
-              <div key={label} className="flex min-h-12 items-center gap-3 rounded-xl border border-slate-200 bg-slate-50/80 px-3">
-                <span className="grid size-8 place-items-center rounded-lg bg-slate-950 text-white">
-                  <Icon size={17} />
-                </span>
-                <span className="text-sm font-bold text-slate-700">{label}</span>
-              </div>
-            ))}
-          </div>
         </div>
 
-        <div className="grid grid-cols-5 gap-3 border-y border-slate-200 bg-slate-50/80 p-4 max-[1180px]:grid-cols-3 max-[900px]:grid-cols-1 max-[760px]:p-4">
-          {features.map(([Icon, title, desc]) => (
-            <article key={title} className="grid min-h-32 content-start gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-xl hover:shadow-slate-900/10">
+        <div className="grid grid-cols-4 gap-3 border-y border-slate-200 bg-slate-50/80 p-4 max-[900px]:grid-cols-2 max-[640px]:grid-cols-1 max-[760px]:p-4">
+          {features.map(([Icon, title, desc, tone]) => (
+            <article key={title} className={`grid min-h-32 content-start gap-3 rounded-2xl border border-white bg-gradient-to-br ${tone} p-4 shadow-sm ring-1 transition hover:-translate-y-0.5 hover:shadow-xl hover:shadow-slate-900/10`}>
               <div className="flex items-center justify-between gap-3">
-                <span className="grid size-10 place-items-center rounded-xl bg-slate-950 text-white">
+                <span className="grid size-10 place-items-center rounded-xl bg-white shadow-sm">
                   <Icon size={18} />
                 </span>
               </div>
@@ -1614,6 +1671,56 @@ function WelcomePanel({ t, user, onClose, onDoNotShowAgain }) {
             <Button variant="ghost" onPress={onDoNotShowAgain}>{t("welcomeDoNotShow")}</Button>
             <Button variant="primary" onPress={onClose} startContent={<Sparkles size={17} />}>{t("welcomeStart")}</Button>
           </div>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function InstructionDialog({ t, language, view, onClose }) {
+  const content = pageInstructions(view, language);
+  if (!content) return null;
+  const Icon = content.icon;
+
+  return (
+    <div className="fixed inset-0 z-50 grid place-items-center bg-slate-950/45 p-5 backdrop-blur-sm" role="presentation" onMouseDown={onClose}>
+      <section
+        className="w-full max-w-3xl overflow-hidden rounded-[2rem] border border-white/70 bg-white shadow-[0_34px_120px_rgba(2,6,23,0.28)]"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="instruction-dialog-title"
+        onMouseDown={(event) => event.stopPropagation()}
+      >
+        <div className={`grid gap-4 bg-gradient-to-br ${content.tone} p-6`}>
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <span className="grid size-13 shrink-0 place-items-center rounded-2xl bg-white text-slate-950 shadow-sm">
+                <Icon size={22} />
+              </span>
+              <div>
+                <Badge tone="neutral">{language === "vi" ? "Instruction" : "Instruction"}</Badge>
+                <h3 id="instruction-dialog-title" className="mt-2 text-3xl font-black leading-tight tracking-normal text-slate-950">
+                  {content.title}
+                </h3>
+              </div>
+            </div>
+            <Button variant="outline" onPress={onClose}>{language === "vi" ? "Đóng" : "Close"}</Button>
+          </div>
+          <p className="max-w-2xl text-sm font-semibold leading-7 text-slate-600">{content.description}</p>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3 bg-white p-5 max-[760px]:grid-cols-1">
+          {content.items.map(([ItemIcon, title, text]) => (
+            <article key={title} className="grid min-h-32 content-start gap-3 rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
+              <span className="grid size-10 place-items-center rounded-xl bg-white text-slate-950 shadow-sm">
+                <ItemIcon size={18} />
+              </span>
+              <div>
+                <strong className="text-base text-slate-950">{title}</strong>
+                <p className="mt-1.5 text-sm leading-6 text-slate-500">{text}</p>
+              </div>
+            </article>
+          ))}
         </div>
       </section>
     </div>
@@ -1656,17 +1763,22 @@ function AuthLayout(props) {
   return (
     <main className="grid min-h-screen grid-cols-[minmax(0,1fr)_minmax(390px,460px)] bg-[linear-gradient(90deg,rgba(248,250,252,0.96),rgba(248,250,252,0.72)),url('https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=1600&q=80')] bg-cover bg-center max-[900px]:grid-cols-1">
       <section className="flex min-h-screen flex-col justify-between p-10 max-[900px]:min-h-0 max-[900px]:gap-12">
-        <div className="flex items-center gap-3">
+        <button
+          type="button"
+          className="flex w-fit items-center gap-3 rounded-2xl text-left transition hover:opacity-80 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-4"
+          onClick={() => props.onNavigate("/")}
+          aria-label={props.language === "vi" ? "Về trang giới thiệu Cardly" : "Back to Cardly landing page"}
+        >
           <BrandLogo />
           <div>
             <h1 className="text-2xl font-black tracking-normal text-slate-950">Cardly</h1>
             <p className="text-sm font-semibold text-slate-500">Personal contact OS</p>
           </div>
-        </div>
+        </button>
         <div className="max-w-3xl">
-          <Badge tone="success">OCR + Contacts</Badge>
+          <Badge tone="success">{props.language === "vi" ? "Danh thiếp + Danh bạ" : "Cards + Contacts"}</Badge>
           <h2 className="mt-5 max-w-3xl text-6xl font-black leading-none tracking-normal text-slate-950 max-[900px]:text-4xl">{props.language === "vi" ? "Scan danh thiếp, kiểm tra dữ liệu, lưu vào danh bạ." : "Scan cards, review data, save clean contacts."}</h2>
-          <p className="mt-5 max-w-xl text-lg leading-8 text-slate-600">{props.language === "vi" ? "Một workspace gọn cho xác thực tài khoản, xử lý OCR và quản lý liên hệ cá nhân." : "A focused workspace for account access, OCR processing and personal contact management."}</p>
+          <p className="mt-5 max-w-xl text-lg leading-8 text-slate-600">{props.language === "vi" ? "Một workspace gọn cho xác thực tài khoản, quét danh thiếp và quản lý liên hệ cá nhân." : "A focused workspace for account access, card scanning and personal contact management."}</p>
         </div>
         <div className="grid grid-cols-3 gap-3 max-[640px]:grid-cols-1">
           <Stat label={props.language === "vi" ? "Danh bạ" : "Contacts"} value={props.language === "vi" ? "Gọn gàng" : "Organized" } />
@@ -1749,16 +1861,16 @@ function AuthLayout(props) {
 function LandingPage({ t, language, onLanguageChange, onStart }) {
   const landingFeatures = language === "vi"
     ? [
-        ["OCR danh thiếp", "Upload ảnh danh thiếp, theo dõi tiến trình xử lý, xem preview và kiểm tra dữ liệu trước khi lưu."],
-        ["Review trước khi lưu", "Chỉnh lại tên, công ty, chức danh, email, số điện thoại và ngữ cảnh ngay trong màn hình kết quả OCR."],
+        ["Quét danh thiếp", "Upload ảnh danh thiếp, theo dõi tiến trình xử lý, xem preview và kiểm tra dữ liệu trước khi lưu."],
+        ["Review trước khi lưu", "Chỉnh lại tên, công ty, chức danh, email, số điện thoại và ngữ cảnh ngay trong màn hình kết quả quét."],
         ["Danh bạ tập trung", "Tìm kiếm, xem chi tiết, chỉnh sửa, xóa liên hệ và xem lại ảnh danh thiếp hoặc QR gốc khi cần."],
         ["Thêm bằng QR", "Quét QR từ thẻ số, QR contact hoặc QR bundle để lưu nhanh một hoặc nhiều liên hệ vào danh bạ."],
         ["QR bundle", "Chọn nhiều liên hệ, tạo một mã QR chung, tải QR về và mở trang bundle để xem danh sách được chia sẻ."],
         ["Thẻ liên hệ số", "Tạo hồ sơ công khai có avatar, vị trí, công ty, bio, kênh liên hệ, QR tải xuống và trang /card riêng."],
       ]
     : [
-        ["Business-card OCR", "Upload card images, track processing progress, preview the image and review extracted data before saving."],
-        ["Review before saving", "Edit name, company, position, email, phone and meeting context directly from the OCR result screen."],
+        ["Business-card scanning", "Upload card images, track processing progress, preview the image and review extracted data before saving."],
+        ["Review before saving", "Edit name, company, position, email, phone and meeting context directly from the scan result screen."],
         ["Centralized contacts", "Search, inspect, edit and delete contacts, with business-card images or source QR kept available when useful."],
         ["Add by QR", "Scan a QR from a digital card, shared contact or bundle to save one or many contacts quickly."],
         ["QR bundles", "Select multiple contacts, create one shared QR, download it and open a bundle page with the shared list."],
@@ -1783,7 +1895,7 @@ function LandingPage({ t, language, onLanguageChange, onStart }) {
 
       <section className="mx-auto grid w-[min(1180px,calc(100vw-48px))] grid-cols-[minmax(0,1fr)_minmax(340px,440px)] items-center gap-12 py-12 max-[900px]:grid-cols-1">
         <div>
-          <Badge tone="neutral">{language === "vi" ? "OCR · QR bundle · Thẻ liên hệ số" : "OCR · QR bundles · Digital card"}</Badge>
+          <Badge tone="neutral">{language === "vi" ? "Quét danh thiếp · QR bundle · Thẻ liên hệ số" : "Card scanning · QR bundles · Digital card"}</Badge>
           <h2 className="mt-5 max-w-3xl text-7xl font-black leading-none tracking-normal text-slate-950 max-[900px]:text-5xl">{language === "vi" ? "Biến danh thiếp thành danh bạ thông minh." : "Turn business cards into a smart address book."}</h2>
           <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-600">
             {language === "vi"
@@ -1792,7 +1904,7 @@ function LandingPage({ t, language, onLanguageChange, onStart }) {
           </p>
           <div className="mt-6 flex flex-wrap items-center gap-3">
             <Button variant="primary" onPress={onStart} startContent={<ChevronRight size={17} />}>{language === "vi" ? "Bắt đầu" : "Get started"}</Button>
-            <Badge tone="success">{language === "vi" ? "Lưu contact bằng OCR hoặc QR" : "Save contacts from OCR or QR"}</Badge>
+            <Badge tone="success">{language === "vi" ? "Lưu liên hệ bằng ảnh hoặc QR" : "Save contacts from image or QR"}</Badge>
           </div>
         </div>
         <div className="grid gap-4">
@@ -1821,7 +1933,7 @@ function LandingPage({ t, language, onLanguageChange, onStart }) {
             <div className="flex min-h-16 items-center gap-3 rounded-2xl border border-slate-200 bg-white p-3">
               <FileText size={18} />
               <div>
-                <strong>{language === "vi" ? "OCR và bóc tách dữ liệu" : "OCR + field extraction"}</strong>
+                <strong>{language === "vi" ? "Đọc và bóc tách dữ liệu" : "Read and extract fields"}</strong>
                 <small className="block text-slate-500">{language === "vi" ? "Tên, công ty, email, số điện thoại, website." : "Name, company, email, phone and website."}</small>
               </div>
             </div>
@@ -1841,7 +1953,7 @@ function LandingPage({ t, language, onLanguageChange, onStart }) {
             </div>
           </div>
           <div className="grid grid-cols-3 gap-2">
-            <Stat label={language === "vi" ? "Nguồn lưu" : "Save from"} value="OCR/QR" />
+            <Stat label={language === "vi" ? "Nguồn lưu" : "Save from"} value={language === "vi" ? "Ảnh/QR" : "Image/QR"} />
             <Stat label={language === "vi" ? "Chia sẻ" : "Sharing"} value={language === "vi" ? "1 hoặc nhiều" : "1 or many"} />
             <Stat label={language === "vi" ? "Ngôn ngữ" : "Languages"} value="VI/EN" />
           </div>
@@ -2026,7 +2138,9 @@ function Sidebar({ t, activeView, user, onNavigate, onLogout }) {
   );
 }
 
-function Topbar({ t, activeView, busy, user, language, onLanguageChange, onRefresh }) {
+function Topbar({ t, activeView, busy, user, language, onLanguageChange, onRefresh, onShowInstructions }) {
+  const canShowInstructions = ["contacts", "qr-contact", "ocr", "digital"].includes(activeView);
+
   return (
     <header className="flex min-h-18 items-center justify-between gap-4 rounded-[1.75rem] border border-slate-200/80 bg-white/82 px-5 py-4 shadow-[0_18px_60px_rgba(15,23,42,0.06)] backdrop-blur-xl max-[760px]:items-stretch max-[760px]:flex-col">
       <div>
@@ -2036,6 +2150,9 @@ function Topbar({ t, activeView, busy, user, language, onLanguageChange, onRefre
       <div className="flex flex-wrap items-center gap-2">
         <LanguageSwitcher language={language} onChange={onLanguageChange} />
         <Badge tone={user?.is_active ? "success" : "neutral"}>{user?.is_active ? t("verified") : t("session")}</Badge>
+        {canShowInstructions && (
+          <Button variant="outline" onPress={onShowInstructions} startContent={<HelpCircle size={17} />}>{t("instructionButton")}</Button>
+        )}
         <Button variant="outline" onPress={onRefresh} isLoading={busy === "documents"} startContent={<RefreshCw size={17} />}>{t("refresh")}</Button>
       </div>
     </header>
@@ -3007,20 +3124,62 @@ function ReviewEditor({ t, review, data, context, onDataChange, onContextChange 
   );
 }
 
-function DigitalCardView({ t, user, card, busy, onSave, onProfileSave }) {
+function DigitalCardView({ t, user, card, busy, onSave, onProfileSave, onAvatarUpload, onAvatarDelete, avatarHistory = [], uploadProgress = 0 }) {
   const [form, setForm] = useState(() => digitalCardForm(card, user));
   const [avatarUrl, setAvatarUrl] = useState(user?.avatar_url || "");
+  const [avatarFile, setAvatarFile] = useState(null);
+  const [avatarPreview, setAvatarPreview] = useState("");
+  const [avatarSource, setAvatarSource] = useState("url");
 
   useEffect(() => {
     setForm(digitalCardForm(card, user));
     setAvatarUrl(user?.avatar_url || "");
+    setAvatarFile(null);
+    setAvatarSource("url");
   }, [card, user]);
+
+  useEffect(() => {
+    if (!avatarFile) {
+      setAvatarPreview("");
+      return undefined;
+    }
+    const url = URL.createObjectURL(avatarFile);
+    setAvatarPreview(url);
+    return () => URL.revokeObjectURL(url);
+  }, [avatarFile]);
 
   const displayName = form.full_name || t("yourName");
   const headline = [form.title, form.company].filter(Boolean).join(" · ") || t("titleCompany");
   const highlightItems = splitList(form.highlights);
-  const shareUrl = card?.public_url || (form.slug ? `${window.location.origin}/card/${slugify(form.slug)}` : "");
-  const profilePhoto = user?.avatar_url || avatarUrl;
+  const accountSlug = emailSlug(user?.email || form.email || form.slug);
+  const shareUrl = accountSlug ? `${window.location.origin}/card/${accountSlug}` : "";
+  const savedProfilePhoto = avatarUrl || user?.avatar_url || form.photo_url;
+  const profilePhoto = avatarSource === "file" ? avatarPreview || user?.avatar_url || form.photo_url : savedProfilePhoto;
+
+  function changeAvatarSource(source) {
+    setAvatarSource(source);
+    if (source === "url") {
+      setAvatarFile(null);
+      setAvatarUrl(user?.avatar_url || form.photo_url || "");
+    } else {
+      setAvatarUrl("");
+    }
+  }
+
+  async function uploadSelectedAvatar() {
+    const payload = await onAvatarUpload(avatarFile);
+    if (payload?.avatar_url) {
+      setAvatarUrl(payload.avatar_url);
+      setAvatarFile(null);
+      setAvatarSource("url");
+    }
+  }
+
+  function selectRecentAvatar(url) {
+    setAvatarSource("url");
+    setAvatarFile(null);
+    setAvatarUrl(url);
+  }
 
   return (
     <section className="grid grid-cols-12 gap-5">
@@ -3048,7 +3207,95 @@ function DigitalCardView({ t, user, card, busy, onSave, onProfileSave }) {
           </div>
         </Card.Header>
         <Card.Content>
-          <form className="grid gap-4" onSubmit={(event) => { event.preventDefault(); onSave({ ...form, photo_url: profilePhoto }); }}>
+          <form className="grid gap-4" onSubmit={(event) => { event.preventDefault(); onSave({ ...form, photo_url: savedProfilePhoto }); }}>
+            <div className="grid gap-4 rounded-[1.5rem] border border-slate-200 bg-[linear-gradient(135deg,#f8fafc,#ffffff)] p-4">
+              <div className="flex items-start justify-between gap-3 max-[640px]:grid">
+                <div className="flex min-w-0 items-center gap-3">
+                  {profilePhoto ? (
+                    <img className="h-20 w-20 shrink-0 rounded-3xl border border-white object-cover object-center shadow-[0_16px_38px_rgba(15,23,42,0.16)]" src={profilePhoto} alt={displayName} />
+                  ) : (
+                    <Avatar value={displayName} />
+                  )}
+                  <div className="min-w-0">
+                    <Badge tone="neutral">Avatar</Badge>
+                    <strong className="mt-2 block text-lg font-black text-slate-950">{t("avatarPanelTitle")}</strong>
+                    <p className="mt-1 max-w-md text-sm font-semibold leading-6 text-slate-500">{t("avatarPanelDesc")}</p>
+                  </div>
+                </div>
+              </div>
+              <Tabs
+                value={avatarSource}
+                onValueChange={changeAvatarSource}
+                items={[
+                  { key: "url", label: t("avatarSourceUrl") },
+                  { key: "file", label: t("avatarSourceFile") },
+                ]}
+              />
+              {avatarSource === "url" ? (
+                <div className="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-3 max-[760px]:grid-cols-1">
+                  <TextField label={t("avatarUrl")} value={avatarUrl} onChange={setAvatarUrl} placeholder={t("avatarUrlPlaceholder")} />
+                  <Button variant="outline" onPress={() => onProfileSave({ avatar_url: avatarUrl })} isLoading={busy === "profile-update"} startContent={<Save size={17} />}>{t("updateAvatar")}</Button>
+                </div>
+              ) : (
+                <div className="grid gap-2">
+                  <FilePicker label={t("avatarFile")} chooseLabel={t("chooseAvatar")} file={avatarFile} onChange={setAvatarFile} />
+                  <Button
+                    variant="secondary"
+                    onPress={uploadSelectedAvatar}
+                    isDisabled={!avatarFile}
+                    isLoading={busy === "avatar-upload"}
+                    startContent={<Upload size={17} />}
+                  >
+                    {t("uploadAvatarFile")}
+                  </Button>
+                </div>
+              )}
+              {busy === "avatar-upload" && (
+                <ProgressPanel
+                  title={t("uploadRunningTitle")}
+                  description={t("uploadRunningDesc")}
+                  label={t("uploadProgress")}
+                  value={uploadProgress}
+                  icon={<Upload size={22} />}
+                />
+              )}
+              {!!avatarHistory.length && (
+                <div className="grid gap-2 rounded-[1.25rem] border border-slate-200 bg-white/80 p-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <strong className="text-sm font-black text-slate-950">{t("recentAvatars")}</strong>
+                    <span className="text-xs font-bold text-slate-500">{avatarHistory.length}/5</span>
+                  </div>
+                  <p className="m-0 text-xs font-semibold leading-5 text-slate-500">{t("recentAvatarsDesc")}</p>
+                  <div className="flex flex-wrap gap-2">
+                    {avatarHistory.map((avatar) => {
+                      const active = avatar.url === savedProfilePhoto;
+                      return (
+                        <span key={avatar.id || avatar.url} className="relative h-16 w-16 shrink-0">
+                          <button
+                            type="button"
+                            className={`grid h-14 w-14 overflow-hidden rounded-2xl border bg-white p-1 transition ${active ? "border-slate-950 ring-4 ring-slate-950/10" : "border-slate-200 hover:border-slate-400"}`}
+                            onClick={() => selectRecentAvatar(avatar.url)}
+                            aria-label={t("recentAvatars")}
+                          >
+                            <img className="block h-full w-full rounded-xl object-cover object-center" src={avatar.url} alt="" />
+                          </button>
+                          <button
+                            type="button"
+                            className="absolute -right-1 -top-1 grid size-6 place-items-center rounded-full border border-red-100 bg-red-50 text-red-600 shadow-sm transition hover:bg-red-100"
+                            onClick={() => onAvatarDelete(avatar.id)}
+                            aria-label={t("confirmDelete")}
+                            disabled={busy === "avatar-delete"}
+                          >
+                            <Trash2 size={13} />
+                          </button>
+                        </span>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+
             <div className="grid gap-3 rounded-[1.5rem] border border-slate-200 bg-slate-50/80 p-4">
               <div className="flex items-center gap-2">
                 <Badge tone="neutral">Profile</Badge>
@@ -3058,10 +3305,8 @@ function DigitalCardView({ t, user, card, busy, onSave, onProfileSave }) {
                 <TextField label={t("fullName")} value={form.full_name} onChange={(full_name) => setForm({ ...form, full_name })} />
                 <TextField label={t("position")} value={form.title} onChange={(title) => setForm({ ...form, title })} />
                 <TextField label={t("company")} value={form.company} onChange={(company) => setForm({ ...form, company })} />
-                <TextField label={t("avatarUrl")} value={avatarUrl} onChange={setAvatarUrl} placeholder={t("avatarUrlPlaceholder")} />
               </div>
               <TextField label="Bio" value={form.bio} onChange={(bio) => setForm({ ...form, bio })} />
-              <Button variant="outline" onPress={() => onProfileSave({ avatar_url: avatarUrl })} isLoading={busy === "profile-update"} startContent={<Save size={17} />}>{t("profileUpdated")}</Button>
             </div>
 
             <div className="grid gap-3 rounded-[1.5rem] border border-slate-200 bg-slate-50/80 p-4">
@@ -3070,7 +3315,6 @@ function DigitalCardView({ t, user, card, busy, onSave, onProfileSave }) {
                 <strong>{t("digitalContactSection")}</strong>
               </div>
               <div className="grid grid-cols-2 gap-3 max-[760px]:grid-cols-1">
-                <TextField label="Slug" value={form.slug} onChange={(slug) => setForm({ ...form, slug })} />
                 <TextField label="Email" type="email" value={form.email} onChange={(email) => setForm({ ...form, email })} />
                 <TextField label="Phone" value={form.phone} onChange={(phone) => setForm({ ...form, phone })} />
                 <TextField label={t("zaloPhone")} value={form.zalo} onChange={(zalo) => setForm({ ...form, zalo })} placeholder={t("zaloPhonePlaceholder")} />
@@ -3114,7 +3358,7 @@ function DigitalCardView({ t, user, card, busy, onSave, onProfileSave }) {
         <Card.Content>
           <div className="grid min-h-[680px] content-start gap-5 rounded-[2rem] border border-slate-200 bg-[radial-gradient(circle_at_86%_8%,rgba(15,23,42,0.16),transparent_24%),linear-gradient(160deg,#fff,#f8fafc_52%,#e2e8f0)] p-7">
             <div className="flex items-center justify-between gap-3">
-              {profilePhoto ? <img className="size-20 rounded-full border border-slate-200 object-cover shadow-sm" src={profilePhoto} alt={displayName} /> : <Avatar value={displayName} />}
+              {profilePhoto ? <img className="h-20 w-20 shrink-0 rounded-full border border-slate-200 object-cover object-center shadow-sm" src={profilePhoto} alt={displayName} /> : <Avatar value={displayName} />}
               <Badge tone="success">{t("publicPreview")}</Badge>
             </div>
             <h3 className="max-w-[13ch] text-6xl font-black leading-none tracking-normal text-slate-950 max-[760px]:text-4xl">{displayName}</h3>
@@ -3146,7 +3390,7 @@ function DigitalCardView({ t, user, card, busy, onSave, onProfileSave }) {
                 <Button
                   variant="outline"
                   full
-                  onPress={() => downloadQrImage(card?.qr_svg, form.slug || displayName)}
+                  onPress={() => downloadQrImage(card?.qr_svg, accountSlug || displayName)}
                   isDisabled={!card?.qr_svg}
                   startContent={<Download size={17} />}
                 >
@@ -3518,7 +3762,7 @@ function PublicBundlePage({ bundle, language }) {
 
 function digitalCardForm(card, user) {
   return {
-    slug: card?.slug || slugify(user?.full_name || user?.email || "cardly"),
+    slug: emailSlug(user?.email || card?.email || card?.slug || "cardly"),
     full_name: card?.full_name || user?.full_name || "",
     title: card?.title || "",
     company: card?.company || "",
@@ -3539,6 +3783,11 @@ function digitalCardForm(card, user) {
     highlights: Array.isArray(card?.highlights) ? card.highlights.join(", ") : "",
     is_public: card?.is_public ?? true,
   };
+}
+
+function emailSlug(email) {
+  const localPart = String(email || "").split("@")[0];
+  return slugify(localPart || email || "cardly");
 }
 
 function slugify(value) {
@@ -3962,11 +4211,102 @@ function authDescription(view, language) {
   if (language === "en") {
     if (view === "register") return "Create an account and receive an OTP by email.";
     if (view === "otp") return "Enter the 6-digit code to activate your account.";
-    return "Access your contacts and OCR workspace.";
+    return "Access your contacts and card scanning workspace.";
   }
   if (view === "register") return "Tạo tài khoản và nhận mã OTP qua email.";
   if (view === "otp") return "Nhập mã 6 chữ số để kích hoạt tài khoản.";
-  return "Truy cập danh bạ và workspace OCR của bạn.";
+  return "Truy cập danh bạ và khu vực quét danh thiếp của bạn.";
+}
+
+function pageInstructions(view, language) {
+  const vi = language === "vi";
+  const content = {
+    contacts: {
+      icon: ContactRound,
+      tone: "from-sky-50 via-white to-emerald-50",
+      title: vi ? "Quản lý danh bạ" : "Manage contacts",
+      description: vi
+        ? "Đây là nơi xem toàn bộ liên hệ đã lưu, tìm kiếm nhanh, mở chi tiết và tạo QR bundle để chia sẻ nhiều contact cùng lúc."
+        : "This is where saved contacts live. Search quickly, open contact details and create QR bundles to share many contacts at once.",
+      items: vi
+        ? [
+            [Search, "Tìm liên hệ", "Dùng ô tìm kiếm để lọc theo tên, công ty, email hoặc số điện thoại."],
+            [Eye, "Mở chi tiết", "Bấm vào thẻ liên hệ để xem thông tin đầy đủ, ảnh danh thiếp và QR contact."],
+            [QrCode, "Tạo QR bundle", "Chọn từ hai liên hệ trở lên rồi bấm Chia sẻ đã chọn để tạo QR chung."],
+            [Trash2, "Xóa cẩn thận", "Các hành động xóa sẽ có hộp xác nhận trước khi dữ liệu bị gỡ khỏi danh bạ."],
+          ]
+        : [
+            [Search, "Find contacts", "Use search to filter by name, company, email or phone number."],
+            [Eye, "Open details", "Open a contact to inspect full details, card images and contact QR."],
+            [QrCode, "Create QR bundles", "Select two or more contacts, then share them through one bundle QR."],
+            [Trash2, "Delete carefully", "Delete actions ask for confirmation before removing records."],
+          ],
+    },
+    "qr-contact": {
+      icon: QrCode,
+      tone: "from-amber-50 via-white to-sky-50",
+      title: vi ? "Thêm liên hệ bằng QR" : "Add contacts by QR",
+      description: vi
+        ? "Trang này dùng để upload ảnh QR từ Cardly. QR có thể là thẻ số cá nhân, một contact riêng lẻ hoặc bundle nhiều contact."
+        : "Use this page to upload a Cardly QR image. It can point to a digital card, one shared contact or a multi-contact bundle.",
+      items: vi
+        ? [
+            [Upload, "Chọn ảnh QR", "Upload ảnh QR rõ nét, ít bị cắt góc và đủ sáng để hệ thống đọc được link."],
+            [QrCode, "Nhận diện link", "Hệ thống đọc link Cardly trong QR rồi xác định đó là card, contact hay bundle."],
+            [ContactRound, "Lưu vào danh bạ", "Nếu QR hợp lệ, liên hệ sẽ được tạo trong danh bạ của tài khoản hiện tại."],
+            [Layers, "Hỗ trợ bundle", "Với QR bundle, hệ thống có thể lưu nhiều liên hệ trong cùng một lần quét."],
+          ]
+        : [
+            [Upload, "Choose QR image", "Upload a clear QR image with enough contrast and visible corners."],
+            [QrCode, "Read the link", "Cardly reads the QR link and detects whether it is a card, contact or bundle."],
+            [ContactRound, "Save contacts", "Valid QR data is saved into the current account's address book."],
+            [Layers, "Bundle support", "A bundle QR can save multiple contacts from one scan."],
+          ],
+    },
+    ocr: {
+      icon: FileText,
+      tone: "from-emerald-50 via-white to-fuchsia-50",
+      title: vi ? "Quét danh thiếp" : "Scan business cards",
+      description: vi
+        ? "Trang quét danh thiếp tách luồng thành từng bước: upload ảnh, chọn bản scan trong hàng đợi, đọc thông tin, review dữ liệu rồi lưu vào danh bạ."
+        : "The card scanning page is split into steps: upload images, pick a queued scan, read details, review data and save the contact.",
+      items: vi
+        ? [
+            [CloudUpload, "Upload ảnh", "Có thể upload mặt trước và mặt sau. Ảnh gốc được lưu để bạn xem lại."],
+            [Layers, "Chọn từ hàng đợi", "Những bản scan chưa lưu contact sẽ nằm trong hàng đợi để tiếp tục xử lý."],
+            [FileText, "Đọc danh thiếp", "Khi bấm đọc danh thiếp, thanh tiến trình cho biết hệ thống đang đọc và chuẩn bị dữ liệu."],
+            [Save, "Review rồi lưu", "Chỉnh dữ liệu trong panel kết quả; bấm Lưu vào danh bạ để lưu bản chỉnh sửa cuối cùng."],
+          ]
+        : [
+            [CloudUpload, "Upload images", "Upload front and back images. Original files remain available for review."],
+            [Layers, "Pick from queue", "Unsaved scans stay in the queue so you can continue later."],
+            [FileText, "Read card", "The progress bar shows when Cardly is reading and preparing extracted data."],
+            [Save, "Review and save", "Edit the result panel, then save the final version into contacts."],
+          ],
+    },
+    digital: {
+      icon: Globe2,
+      tone: "from-fuchsia-50 via-white to-indigo-50",
+      title: vi ? "Thiết lập thẻ số" : "Set up digital card",
+      description: vi
+        ? "Thẻ số là hồ sơ công khai của bạn. Bạn có thể cập nhật thông tin, dùng avatar tài khoản, xem preview và tải QR để chia sẻ."
+        : "Your digital card is a public profile. Update details, use your account avatar, preview the card and download the QR for sharing.",
+      items: vi
+        ? [
+            [Pencil, "Cập nhật hồ sơ", "Điền họ tên, chức vụ, công ty, bio và các kênh liên hệ quan trọng."],
+            [Upload, "Đổi avatar", "Avatar tài khoản sẽ được dùng làm ảnh đại diện trên thẻ số công khai."],
+            [Eye, "Xem preview", "Khung bên phải hiển thị gần giống trang /card mà người khác sẽ nhìn thấy."],
+            [Download, "Tải QR", "Sau khi lưu thẻ số, tải QR dạng ảnh để in, gửi hoặc đưa cho người khác quét."],
+          ]
+        : [
+            [Pencil, "Update profile", "Fill in name, position, company, bio and key contact channels."],
+            [Upload, "Change avatar", "Your account avatar is used as the public digital-card photo."],
+            [Eye, "Preview card", "The preview shows roughly what other people see on your /card page."],
+            [Download, "Download QR", "After saving, download the QR image to print, send or share in person."],
+          ],
+    },
+  };
+  return content[view] || null;
 }
 
 function viewTitle(view, t) {

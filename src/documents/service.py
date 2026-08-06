@@ -155,6 +155,13 @@ def _cloudinary_public_id(filename: str, processing_id: str) -> str:
     return f"{safe_processing_id}/{safe_stem}"
 
 
+def _cloudinary_avatar_public_id(filename: str) -> str:
+    stem = filename.rsplit(".", 1)[0].strip() or "avatar"
+    safe_stem = _safe_cloudinary_segment(stem, "avatar")
+    timestamp = datetime.utcnow().strftime("%Y%m%d%H%M%S%f")
+    return f"avatar/{timestamp}_{safe_stem}"
+
+
 def _cloudinary_url(public_id: str) -> str:
     _configure_cloudinary()
     try:
@@ -189,6 +196,38 @@ async def save_to_storage(
         resource_type="image",
     )
     return str(result["secure_url"]), str(result["public_id"])
+
+
+async def save_avatar_to_storage(
+    file_content: bytes,
+    filename: str,
+    user_id: str,
+    mime_type: str,
+) -> tuple[str, str]:
+    """Upload an avatar image to the user's Cloudinary avatar folder."""
+    _configure_cloudinary()
+    uploader = _cloudinary_uploader()
+    folder = _cloudinary_user_folder(user_id)
+    public_id = _cloudinary_avatar_public_id(filename)
+
+    result = await run_in_threadpool(
+        uploader.upload,
+        f"data:{mime_type};base64,{base64.b64encode(file_content).decode()}",
+        folder=folder,
+        public_id=public_id,
+        overwrite=False,
+        resource_type="image",
+    )
+    return str(result["secure_url"]), str(result["public_id"])
+
+
+async def delete_image_from_storage(public_id: str) -> None:
+    """Delete one image from Cloudinary if it has a public id."""
+    if not public_id:
+        return
+    _configure_cloudinary()
+    uploader = _cloudinary_uploader()
+    await run_in_threadpool(uploader.destroy, public_id, resource_type="image")
 
 
 async def ingest_single_file(

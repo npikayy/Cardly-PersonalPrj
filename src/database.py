@@ -1,7 +1,7 @@
 from beanie import init_beanie
 from motor.motor_asyncio import AsyncIOMotorClient
 
-from src.auth.models import OtpCode, PasswordResetSession, RefreshToken, User
+from src.auth.models import OtpCode, PasswordResetSession, RefreshToken, User, UserAvatar
 from src.config import settings
 from src.documents.models import (
     ContactBundle,
@@ -14,6 +14,7 @@ from src.processing.models import BusinessCardScan
 
 ALL_DOCUMENTS = [
     User,
+    UserAvatar,
     RefreshToken,
     OtpCode,
     PasswordResetSession,
